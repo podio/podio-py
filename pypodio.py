@@ -15,46 +15,28 @@ class PodioError(Exception):
 		return repr(self.value)
 
 
-class API:
+class API(object):
 	'''Represents a Python interface to the Podio API.
 
 	Usage:
 
-	To create an instance of the API without credentials
-		>>> import pypodio
-		>>>	api = pypodio.API()
-
+	To create an instance of the API and get an OAuth Token
+		>> import pypodio
+		>> api = pypodio.API($api_secret, $api_key)
+		>> api.request_oauth_token(username=$user, password = $username_password)
+	
+	Making a GET request to any API method is simple.
+		>> api.req(url="$apiMethodURI", params={'$paramName':'$paramValue'})
 	'''
 		
-	class OAuthToken:
+	class OAuthToken(object):
 		def __init__(self, resp):
 			self.expires_at = resp['expires_in']
 			self.access_token = resp['access_token']
 			self.refresh_token = resp['refresh_token']
-		
-	class request:
-		def __init__(self, url, params, base_url, token):
-			if params != None:
-				self.params = params
-			else:
-				self.params = {}
-						
-			self.url = url
-			self.base_url = base_url
-			self.token = token
-		
-		def req(self):
-			h = httplib2.Http()
-			if self.params != None:
-				params = urlencode(self.params)
-			else:
-				params = {}
-			resp, content = h.request("%s%s" % (self.base_url, self.url), "GET", params, headers = {"authorization":"OAuth2 %s" % (self.token.access_token)})
-			
-			return content
 
 	def __init__(self, api_key=None,
-	api_secret=None, request_headers=None, base_url=None, debug=False):
+	api_secret=None, base_url=None, debug=False):
 		
 		if base_url == None:
 			self.base_url = "https://api.podio.com/"
@@ -62,7 +44,7 @@ class API:
 			self.base_url = base_url
 		
 		if api_key == None or api_secret == None:
-			raise Exception
+			raise PodioError("You must have an API key and secret to use the Podio API")
 		else:
 			self.api_key = api_key
 			self.api_secret = api_secret
@@ -88,7 +70,7 @@ class API:
 		else:
 			content = json.loads(content)
 			self.token = self.OAuthToken(content)
-			self.headers.update({'authorization':self.token.refresh_token})
+			self.headers.update({'authorization':"OAuth2 %s" % self.token.access_token})
 			return self.token
 	def refresh_oauth_token(self, token):
 		'''Uses the refresh token to update the access token. 
@@ -110,16 +92,39 @@ class API:
 		else:
 			content = json.loads(content)
 			self.token = self.OAuthToken(content)
-			self.headers.update({'authorization':self.token.refresh_token})
+			self.headers.update({'authorization':"OAuth2 %s" % self.token.access_token})
 			return True
 	
-	def __getattr__(self, name, params = None):
-		if name.startswith("get_"):
-			url = '/'.join(name[4:].split('_'))
-			req = self.request(url, params, base_url = self.base_url, token = self.token)
-			return req.req()
-		raise AttributeError("%r object has no attribute %r" %
-        	(type(self).__name__, name))
+	def req(self, uri, method, *args, **kwargs):
+		h = httplib2.Http()
+		print self.headers
+		if 'params' in kwargs:
+			params = urlencode(kwargs['params'])
+		else:
+			params = ""
+		
+		if method.lower() == "get":
+			resp, content = h.request("%s%s" % (self.base_url, uri), "GET",
+				params, headers = self.headers)
+		elif method.lower() == "post":
+			headers = self.headers.update({'content-type':'application/x-www-form-urlencoded'})
+			print headers #!!! Remove once debugged
+			resp, content = h.request("%s%s" % (self.base_url, uri), "POST",
+				params, headers = headers)
+		elif method.lower() == "put":
+			resp, content = h.request("%s%s" % (self.base_url, uri), "PUT",
+				params, headers = self.headers)
+		elif method.lower() == "delete":
+			resp, content = h.request("%s%s" % (self.base_url, uri), "DELETE",
+				params, headers = self.headers)
+		if resp['status'] != '200':
+			raise PodioError(content)
+		return json.loads(content)
 
+	# def __getattr__(self, name):
+	# 	if name.startswith("get_"):
+	# 		return lambda *args, **kwargs: self.req(name, *args, **kwargs)
 
-	
+	# 	raise AttributeError("%r object has no attribute %r" %
+	# 		(type(self).__name__, name))
+
