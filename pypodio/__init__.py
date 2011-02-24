@@ -42,15 +42,16 @@ class Podio(Dolt):
 			self._headers.update({'content-type':'application/x-www-form-urlencoded'})
 		if(self.authenticated() and ('authorization' not in self._headers)):
 			self._headers.update({'authorization':"OAuth2 %s" % self._token.access_token})
-		
+		#print self._headers
 		if('url' not in kwargs):
 			url = self.get_url()
 		else:
 			url = "%s%s" % (self._api_url, kwargs['url'])
 		if('type' in kwargs):
 			self._headers.update({'content-type': kwargs['type']})
+		#print url
 		response, data = self._http.request(url, self._method, body=body, headers=self._headers)
-		self._headers.update({'content-type':''})
+		
 		self._attribute_stack = []
 		return self._handle_response(response, data)
 	
@@ -64,7 +65,7 @@ class Podio(Dolt):
 				password=password)
 			if('access_token' in resp):
 				self._token = OAuthToken(resp)
-				print "Successfully Authenticated"
+				#print "Successfully Authenticated"
 				return True
 			else:
 				raise ApiErrorException(resp)
@@ -79,7 +80,7 @@ class Podio(Dolt):
 	#Start implementation of "Users" area API calls 
 
 	def users_get_active_profile(self):
-		return self.GET(url="/users/profile/")
+		return self.GET(url="/user/profile/")
 	
 	#Start implementation of "Applications" area API calls
 
