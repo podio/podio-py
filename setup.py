@@ -18,30 +18,23 @@
 # LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+from setuptools import setup, find_packages
 '''The setup and build script for the pypodio library.'''
 
 __author__ = 'nickbarnwell@boltoncomputing.com'
 __version__ = '0.1.1'
 
-
-# The base package metadata to be used by both distutils and setuptools
-METADATA = dict(
-  name = "pypodio",
+setup(
+  name = "PyPodio",
   version = __version__,
-  py_modules = ['dolt'],
   author='Nick Barnwell',
   author_email='nickbarnwell@boltoncomputing.com',
   description='A Python wrapper around the Podio API',
-  license='MIT License',
+  license='MIT',
   url='http://github.com/nickbarnwell/pypodio',
   keywords='podio',
-)
-
-# Extra package metadata to be used only if setuptools is installed
-SETUPTOOLS_METADATA = dict(
-  install_requires = ['setuptools', 'simplejson'],
-  include_package_data = True,
+  packages= find_packages(),
+  install_requires = ['dolt'],
   classifiers = [
     'Development Status :: 4 - Beta',
     'Intended Audience :: Developers',
@@ -52,26 +45,3 @@ SETUPTOOLS_METADATA = dict(
   ],
 )
 
-
-def Read(file):
-  return open(file).read()
-
-def BuildLongDescription():
-  return '\n'.join([Read('README'), Read('CHANGES')])
-
-def Main():
-  # Build the long_description from the README and CHANGES
-  METADATA['long_description'] = BuildLongDescription()
-
-  # Use setuptools if available, otherwise fallback and use distutils
-  try:
-    import setuptools
-    METADATA.update(SETUPTOOLS_METADATA)
-    setuptools.setup(**METADATA)
-  except ImportError:
-    import distutils.core
-    distutils.core.setup(**METADATA)
-
-
-if __name__ == '__main__':
-  Main()
