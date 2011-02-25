@@ -1,7 +1,9 @@
 from pypodio import *
-import json 
-podio = Podio(client_id="nickbarnwell@boltoncomputing.com", client_secret="")
-podio.request_oauth_token("nickbarnwell@boltoncomputing.com", password="")
+import json
+import settings
+
+podio = Podio(client_id = settings.client_id, client_secret = settings.client_secret)
+podio.request_oauth_token(settings.username, settings.password)
 
 #Defined Method in 
 print podio.users_get_active_profile()
