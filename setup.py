@@ -34,7 +34,7 @@ setup(
   url='http://github.com/nickbarnwell/pypodio',
   keywords='podio',
   packages= find_packages(),
-  install_requires = ['dolt'],
+  install_requires = ['dolt', 'httplib2'],
   classifiers = [
     'Development Status :: 4 - Beta',
     'Intended Audience :: Developers',
