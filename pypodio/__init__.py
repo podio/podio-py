@@ -1,4 +1,6 @@
 from dolt import Dolt
+from urllib import urlencode
+import json
 '''
 Module containing the PyPodio class and its associated helper
 classes and methods
@@ -58,7 +60,45 @@ class Podio(Dolt):
             self._client_secret = client_secret
         else:
             raise NotImplementedError
+    
+    def _clear_headers(self):
+        '''Clear content-type'''
+        if 'content-type' in self._headers:
+            del self._headers['content-type']
+
+    def __call__(self, *args, **kwargs):
+        self._attribute_stack += [str(a) for a in args]
+        self._params = kwargs
         
+        if self._method == "POST" and 'type' not in kwargs:
+            self._headers.update(
+            {'content-type':'application/x-www-form-urlencoded'})
+            body = self._generate_body()
+        elif('type' in kwargs):
+            body = kwargs['body']
+            self._headers.update({'content-type': kwargs['type']})
+        else:
+            body = self._generate_body() #hack
+                
+        if(self.authenticated() and ('authorization' not in self._headers)):
+            self._headers.update({'authorization':"OAuth2 %s" %
+            (self._token.access_token)})
+
+        if('url' not in kwargs):
+            url = self.get_url()
+        else:
+            url = "%s%s" % (self._api_url, kwargs['url'])
+        
+        response, data = self._http.request(
+                url, 
+                self._method,
+                body=body,
+                headers=self._headers)
+        
+        self._clear_headers()
+        self._attribute_stack = []
+        return self._handle_response(response, data)
+
     def authenticated(self):
         '''Checks whether the API object is authenticated'''
 
@@ -69,33 +109,7 @@ class Podio(Dolt):
                 self.refresh_oauth_token()
         return False
 
-    def __call__(self, *args, **kwargs):
-        self._attribute_stack += [str(a) for a in args]
-        self._params = kwargs
-        body = self._generate_body()
-        if self._method == "POST":
-            self._headers.update(
-            {'content-type':'application/x-www-form-urlencoded'})
-        if(self.authenticated() and ('authorization' not in self._headers)):
-            self._headers.update(
-                    {'authorization':"OAuth2 %s" % self._token.access_token}
-                )
-        if('url' not in kwargs):
-            url = self.get_url()
-        else:
-            url = "%s%s" % (self._api_url, kwargs['url'])
-        if('type' in kwargs):
-            self._headers.update({'content-type': kwargs['type']})
-        #print url
-        response, data = self._http.request(
-                url, 
-                self._method,
-                body=body,
-                headers=self._headers)
         
-        self._attribute_stack = []
-        return self._handle_response(response, data)
-    
     #Start implementation of "OAuth" area API calls
 
     def request_oauth_token(self, username, password):
@@ -117,6 +131,9 @@ class Podio(Dolt):
         if('access_token' in resp):
             self._token = OAuthToken(resp)
             #print "Successfully Authenticated"
+            self._headers.update(
+                    {'authorization':"OAuth2 %s" % self._token.access_token}
+                )
             return True
         else:
             raise ApiErrorException(resp)
@@ -167,3 +184,61 @@ class Podio(Dolt):
         if(type(app_id) == int):
             app_id = str(app_id)
         return self.GET(url = "/app/%s" % app_id)
+    
+    def app_list_apps_in_space(self, space_id):
+        '''
+        Returns a list of all the visible apps in a space.
+
+          Arguemtns:
+            space_id: Space ID as a string or int
+        '''
+        return self.GET(url = "/app/space/%r" % space_id)
+
+    def space_find_by_url(self, space_url, id_only=True):
+        '''
+        Returns a space ID given the URL of the space.
+
+          Arguments:
+            space_url: URL of the Space
+          
+          Returns:
+            space_id: Space url as string
+        '''
+        if(type(space_url) == int):
+            space_url = str(space_url)
+        
+        resp = self.GET(url = "/space/url?%s" % urlencode(dict(url=space_url)))
+        if id_only:
+            return resp['space_id']
+        return resp
+    
+    def space_find_all_for_org(self, org_id):
+        '''
+        Find all of the spaces in a given org.
+          
+          Arguments:
+            org_id: Orginization ID as string
+          returns:
+            Dict containing details of spaces
+        '''
+        if(type(org_id) == int):
+            org_id = str(org_id)
+        return self.GET(url = "/org/%s/space/" % org_id)
+    
+    def space_create(self, attributes):
+        '''
+        Create a new space
+          
+          Arguments:
+            Refer to API. Pass in argument as dictionary
+          returns:
+            Dict containing details of newly created space
+        '''
+        if type(attributes) != dict:
+            raise ApiErrorException("Dictionary of values expected")
+        attributes = json.dumps(attributes)
+        return self.POST(
+            url = "/space/", 
+            body = attributes, 
+            type = 'application/json'
+        )
