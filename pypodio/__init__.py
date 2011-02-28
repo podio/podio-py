@@ -1,10 +1,12 @@
-from dolt import Dolt
-from urllib import urlencode
-import json
 '''
 Module containing the PyPodio class and its associated helper
 classes and methods
 '''
+
+from dolt import Dolt
+from urllib import urlencode
+import json
+
 class OAuthToken(object):
     '''
     Class used to encapsulate the OAuthToken required to access the
@@ -65,6 +67,28 @@ class Podio(Dolt):
         '''Clear content-type'''
         if 'content-type' in self._headers:
             del self._headers['content-type']
+    
+    def get_url(self, url=None):
+        if not url:
+            url = self._url_template % {
+                "domain": self._api_url,
+                "generated_url" : self._stack_collapser(self._attribute_stack),
+            }
+        else:
+            url = self._url_template % {
+                'domain': self._api_url,
+                'generated_url': url[1:]
+            }
+            del self._params['url']      
+        
+        if len(self._params):
+            internal_params = self._params.copy()
+            if self._method == 'POST':
+                if "GET" not in internal_params:
+                    return url
+                internal_params = internal_params['GET']
+            url += self._generate_params(internal_params)
+        return url
 
     def __call__(self, *args, **kwargs):
         self._attribute_stack += [str(a) for a in args]
@@ -87,17 +111,22 @@ class Podio(Dolt):
         if('url' not in kwargs):
             url = self.get_url()
         else:
-            url = "%s%s" % (self._api_url, kwargs['url'])
+            url = self.get_url(kwargs['url'])
         
         response, data = self._http.request(
                 url, 
                 self._method,
                 body=body,
                 headers=self._headers)
-        
         self._clear_headers()
         self._attribute_stack = []
         return self._handle_response(response, data)
+    
+    def _sanitize_id(self, item_id):
+        '''Sanitize id if passed as int'''
+        if(type(item_id) == int):
+            return str(item_id)
+        return item_id
 
     def authenticated(self):
         '''Checks whether the API object is authenticated'''
@@ -130,7 +159,6 @@ class Podio(Dolt):
             password=password)
         if('access_token' in resp):
             self._token = OAuthToken(resp)
-            #print "Successfully Authenticated"
             self._headers.update(
                     {'authorization':"OAuth2 %s" % self._token.access_token}
                 )
@@ -168,8 +196,7 @@ class Podio(Dolt):
           Returns:
             Python dict of JSON response
         '''
-        if(type(app_id) == int):
-            app_id = str(app_id)
+        app_id = self._sanitize_id(app_id)
         return self.POST(url = "/app/%s/activate" % app_id)
     
     def app_find(self, app_id):
@@ -181,8 +208,7 @@ class Podio(Dolt):
           Returns:
             Python dict of JSON response
         '''
-        if(type(app_id) == int):
-            app_id = str(app_id)
+        app_id = self._sanitize_id(app_id)
         return self.GET(url = "/app/%s" % app_id)
     
     def app_list_apps_in_space(self, space_id):
@@ -190,9 +216,14 @@ class Podio(Dolt):
         Returns a list of all the visible apps in a space.
 
           Arguemtns:
-            space_id: Space ID as a string or int
+            space_id: Space ID as a string
         '''
-        return self.GET(url = "/app/space/%r" % space_id)
+        space_id = self._sanitize_id(space_id)
+        return self.GET(url = "/app/space/%s/" % space_id)
+
+    def app_get_items(self, app_id, **kwargs):
+        app_id = self._sanitize_id(app_id)
+        return self.GET(url = "/item/app/%s/" % app_id, **kwargs)
 
     def space_find_by_url(self, space_url, id_only=True):
         '''
@@ -203,10 +234,7 @@ class Podio(Dolt):
           
           Returns:
             space_id: Space url as string
-        '''
-        if(type(space_url) == int):
-            space_url = str(space_url)
-        
+        '''        
         resp = self.GET(url = "/space/url?%s" % urlencode(dict(url=space_url)))
         if id_only:
             return resp['space_id']
@@ -221,8 +249,7 @@ class Podio(Dolt):
           returns:
             Dict containing details of spaces
         '''
-        if(type(org_id) == int):
-            org_id = str(org_id)
+        org_id = self._sanitize_id(org_id)
         return self.GET(url = "/org/%s/space/" % org_id)
     
     def space_create(self, attributes):
@@ -242,3 +269,31 @@ class Podio(Dolt):
             body = attributes, 
             type = 'application/json'
         )
+    
+    #Start Item operation implementations
+
+    def items_get_item(self, item_id, **kwargs):
+        '''Get item
+
+          Arguments:
+            item_id: Item's id
+          Returns:
+            Dict with item info
+        '''
+        return self.GET(kwargs, url = "/item/app/$s" % item_id)
+    
+    #Start File Implementations
+
+    def files_get_file(self, file_id, size=None, return_url=True):
+        '''
+        Get a file's URL
+        '''
+        file_id = self._sanitize_id(file_id)
+        if size:
+            url = "%s/%s" % (file_id, size)
+        else:
+            url = "%s" % (file_id)
+        if return_url:
+            return url
+        else:
+            raise NotImplementedError
