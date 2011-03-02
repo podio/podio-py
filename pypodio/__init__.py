@@ -4,8 +4,13 @@ classes and methods
 '''
 
 from dolt import Dolt
-from urllib import urlencode
-import json
+import urllib
+import httplib2
+try:
+    import json as simplejson
+except ImportError:
+    import simplejson
+
 
 class OAuthToken(object):
     '''
@@ -46,10 +51,7 @@ class Podio(Dolt):
         >>> api.request_oauth_token(username, password)
 
     If it is successful then a result of True will be returned, and a call
-    to api.authenticated() will also.
-
-
-    
+    to api.authenticated() will also.  
     '''
     def __init__(self, client_id, client_secret, *args, **kwargs):
         super(Podio, self).__init__(*args, **kwargs)
@@ -68,17 +70,24 @@ class Podio(Dolt):
         if 'content-type' in self._headers:
             del self._headers['content-type']
     
-    def get_url(self, url=None):
+    def get_url(self, url=None, endpoint=None):
         if not url:
             url = self._url_template % {
                 "domain": self._api_url,
                 "generated_url" : self._stack_collapser(self._attribute_stack),
             }
         else:
-            url = self._url_template % {
-                'domain': self._api_url,
-                'generated_url': url[1:]
-            }
+            if endpoint:
+                url = self._url_template % {
+                    'domain': endpoint,
+                    'generated_url': url[1:]
+                }
+                del self._params['endpoint']
+            else:
+                url = self._url_template % {
+                    'domain': self._api_url,
+                    'generated_url': url[1:]
+                }   
             del self._params['url']      
         
         if len(self._params):
@@ -89,6 +98,12 @@ class Podio(Dolt):
                 internal_params = internal_params['GET']
             url += self._generate_params(internal_params)
         return url
+    
+    def _handle_response(self, response, data):
+        try:
+            return simplejson.loads(data)
+        except ValueError:
+            return data
 
     def __call__(self, *args, **kwargs):
         self._attribute_stack += [str(a) for a in args]
@@ -111,8 +126,10 @@ class Podio(Dolt):
         if('url' not in kwargs):
             url = self.get_url()
         else:
-            url = self.get_url(kwargs['url'])
-        
+            if 'endpoint' in kwargs:
+                url = self.get_url(kwargs['url'], kwargs['endpoint'])
+            else:
+                url = self.get_url(kwargs['url'])
         response, data = self._http.request(
                 url, 
                 self._method,
@@ -235,7 +252,7 @@ class Podio(Dolt):
           Returns:
             space_id: Space url as string
         '''        
-        resp = self.GET(url = "/space/url?%s" % urlencode(dict(url=space_url)))
+        resp = self.GET(url = "/space/url?%s" % urllib.urlencode(dict(url=space_url)))
         if id_only:
             return resp['space_id']
         return resp
@@ -272,7 +289,7 @@ class Podio(Dolt):
     
     #Start Item operation implementations
 
-    def items_get_item(self, item_id, **kwargs):
+    def items_get_item(self, item_id, basic=False, **kwargs):
         '''Get item
 
           Arguments:
@@ -280,7 +297,18 @@ class Podio(Dolt):
           Returns:
             Dict with item info
         '''
-        return self.GET(kwargs, url = "/item/app/$s" % item_id)
+        item_id = self._sanitize_id(item_id)
+        if basic:
+            return self.GET(url = "/item/%s/basic" % item_id)
+        return self.GET(kwargs, url = "/item/%s" % item_id)
+
+    def items_next_item(self, item_id, **kwargs):
+        item_id = self._sanitize_id(item_id)
+        return self.GET(url = "/item/%s/next" % item_id)
+    
+    def items_prev_item(self, item_id, **kwargs):
+        item_id = self._sanitize_id(item_id)
+        return self.GET(url = "/item/%s/previous" % item_id)
     
     #Start File Implementations
 
@@ -289,11 +317,12 @@ class Podio(Dolt):
         Get a file's URL
         '''
         file_id = self._sanitize_id(file_id)
+        endpoint = "https://download.podio.com"
         if size:
             url = "%s/%s" % (file_id, size)
         else:
-            url = "%s" % (file_id)
+            url = "/%s" % (file_id)
         if return_url:
-            return url
+            return endpoint+url
         else:
-            raise NotImplementedError
+            return self.GET(endpoint=endpoint, url=url)
