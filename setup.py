@@ -22,7 +22,7 @@ from setuptools import setup, find_packages
 '''The setup and build script for the pypodio library.'''
 
 __author__ = 'nickbarnwell@boltoncomputing.com'
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 setup(
   name = "PyPodio",
