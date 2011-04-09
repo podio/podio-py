@@ -215,6 +215,28 @@ class Podio(Dolt):
         '''
         app_id = self._sanitize_id(app_id)
         return self.POST(url = "/app/%s/activate" % app_id)
+        
+     def app_deactivate_app(self, app_id):
+        '''
+        Deactivates the application with app_id
+          
+          Arguments:
+            app_id: Application ID as string or int
+          Returns:
+            Python dict of JSON response
+        '''
+        app_id = self._sanitize_id(app_id)
+        return self.POST(url = "/app/%s/deactivate" % app_id)
+    
+    def app_delete_app(self, app_id):
+    	'''
+    	Deletes the app with the given id.
+    	
+    		Arguments:
+    		  app_id: Application ID as string or int
+    	'''
+        app_id = self._sanitize_id(app_id)
+        return self.DELETE(url="/app/%s" % app_id)
     
     def app_find(self, app_id):
         '''
