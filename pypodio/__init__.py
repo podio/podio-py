@@ -348,3 +348,33 @@ class Podio(Dolt):
             return endpoint+url
         else:
             return self.GET(endpoint=endpoint, url=url)
+            
+    #Start Task Implementations
+    
+    def task_get_active_tasks(self):
+        '''
+        Returns the active tasks of the user. This is the tasks where the user is responsible. 
+        '''
+        return self.GET(url="/task/active")
+        
+        
+    def task_delete_task(self, task_id):
+    	'''
+    	Deletes the app with the given id.
+    	
+    		Arguments:
+    		  task_id: Task ID as string or int
+    	'''
+        task_id = self._sanitize_id(app_id)
+        return self.DELETE(url="/task/%s" % task_id)
+        
+    def task_complete_task(self, task_id):
+        '''
+        Mark the given task as completed.
+          
+          Arguments:
+            task_id: Task ID as string or int
+     
+        '''
+        app_id = self._sanitize_id(task_id)
+        return self.POST(url = "/task/%s/complete" % task_id)
