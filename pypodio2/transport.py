@@ -156,4 +156,5 @@ class HttpTransport(object):
                     return url
                 internal_params = internal_params['GET']
             url += self._generate_params(internal_params)
+        print url
         return url

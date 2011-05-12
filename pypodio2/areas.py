@@ -7,10 +7,10 @@ class Area(object):
             return str(item_id)
         return item_id
 
-class Items(Area):
+class Item(Area):
     def __init__(self, *args, **kwargs):
-        super(Items, self).__init__(*args, **kwargs)
-    def get_item(self, item_id, basic=False, **kwargs):
+        super(Item, self).__init__(*args, **kwargs)
+    def find(self, item_id, basic=False, **kwargs):
         '''
         Get item
 
@@ -23,16 +23,16 @@ class Items(Area):
             return self.transport.GET(url = "/item/%r/basic" % item_id)
         return self.transport.GET(kwargs, url = "/item/%r" % item_id)
 
-    def next_item(self, item_id, **kwargs):
+    def next(self, item_id, **kwargs):
         return self.transport.GET(url = "/item/%r/next" % item_id)
     
-    def prev_item(self, item_id, **kwargs):
+    def prev(self, item_id, **kwargs):
         return self.transport.GET(url = "/item/%r/previous" % item_id)
 
-class Applications(Area):
+class Application(Area):
     def __init__(self, *args, **kwargs):
         super(Application, self).__init__(*args, **kwargs)
-    def activate_app(self, app_id):
+    def activate(self, app_id):
         '''
         Activates the application with app_id
           
@@ -43,7 +43,7 @@ class Applications(Area):
         '''
         return self.transport.POST(url = "/app/%r/activate" % app_id)
         
-    def deactivate_app(self, app_id):
+    def deactivate(self, app_id):
         '''
         Deactivates the application with app_id
           
@@ -54,7 +54,7 @@ class Applications(Area):
         '''
         return self.transport.POST(url = "/app/%r/deactivate" % app_id)
     
-    def delete_app(self, app_id):
+    def delete(self, app_id):
         '''
         Deletes the app with the given id.
         
@@ -74,7 +74,7 @@ class Applications(Area):
         '''
         return self.transport.GET(url = "/app/%r" % app_id)
     
-    def list_apps_in_space(self, space_id):
+    def list_in_space(self, space_id):
         '''
         Returns a list of all the visible apps in a space.
 
@@ -86,18 +86,18 @@ class Applications(Area):
     def get_items(self, app_id, **kwargs):
         return self.transport.GET(url = "/item/app/%r/" % app_id, **kwargs)
 
-class Tasks(Area):
+class Task(Area):
     def __init__(self, *args, **kwargs):
-        super(Tasks, self).__init__(*args, **kwargs)
+        super(Task, self).__init__(*args, **kwargs)
     
-    def get_tasks(self, **kwargs):
+    def get(self, **kwargs):
         '''
         Get tasks endpoint. QueryStrings are kwargs
         '''
         return self.transport.GET('/task/', **kwargs)
     
             
-    def delete_task(self, task_id):
+    def delete(self, task_id):
         '''
         Deletes the app with the given id.
         Arguments:
@@ -105,7 +105,7 @@ class Tasks(Area):
         '''
         return self.transport.DELETE(url="/task/%r" % task_id)
             
-    def complete_task(self, task_id):
+    def complete(self, task_id):
         '''
         Mark the given task as completed.
         Arguments:
@@ -113,13 +113,13 @@ class Tasks(Area):
         '''
         return self.transport.POST(url = "/task/%r/complete" % task_id)
 
-class Users(Area):
+class User(Area):
     def __init__(self, *args, **kwargs):
-        super(Users, self).__init__(*args, **kwargs)
+        super(User, self).__init__(*args, **kwargs)
     
-class Spaces(Area):
+class Space(Area):
     def __init__(self, *args, **kwargs):
-        super(Spaces, self).__init__(*args, **kwargs)
+        super(Space, self).__init__(*args, **kwargs)
     
     def find_by_url(self, space_url, id_only=True):
         '''
@@ -131,7 +131,9 @@ class Spaces(Area):
           Returns:
             space_id: Space url as string
         '''        
-        resp = self.transport.GET(url = "/space/url?%r" % urllib.urlencode(dict(url=space_url)))
+        from urllib import urlencode
+        
+        resp = self.transport.GET(url = "/space/url?%s" % urlencode(dict(url=space_url)))
         if id_only:
             return resp['space_id']
         return resp
