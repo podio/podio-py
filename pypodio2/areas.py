@@ -1,3 +1,4 @@
+import json
 class Area(object):
     'Represents a Podio Area'
     def __init__(self, transport, *args, **kwargs):
@@ -28,6 +29,26 @@ class Item(Area):
     
     def prev(self, item_id, **kwargs):
         return self.transport.GET(url = "/item/%r/previous" % item_id)
+    
+    def find_all_by_external_id(self, app_id, external_id):
+        return self.transport.GET(url = "/item/app/%r/v2/?external_id=%r" % (app_id, external_id))
+    
+    def revisions(self, item_id):
+        return self.transport.GET(url = "/item/%r/revision/" % item_id)
+    
+    def revision_difference(self, item_id, revision_from_id, revision_to_id):
+        return self.transport.GET(url = "/item/%r/revision/%r/%r" % (item_id, revision_from_id, revision_to_id))
+    
+    def create(self, app_id, attributes):
+        if type(attributes) != dict:
+            return ApiErrorException("Must be of type dict")
+        attributes = json.dumps(attributes)
+        
+        return self.transport.POST(
+            url = "/item/app/%d/" % app_id,
+            body = attributes,
+            type = 'application/json'
+    )
 
 class Application(Area):
     def __init__(self, *args, **kwargs):
@@ -42,7 +63,19 @@ class Application(Area):
             Python dict of JSON response
         '''
         return self.transport.POST(url = "/app/%r/activate" % app_id)
-        
+    
+    def create(self, attributes):
+        if type(attributes) != dict:
+            return ApiErrorException("Must be of type dict")
+        attributes = json.dumps(attributes)
+
+        return self.transport.POST(
+            url = "/app/", 
+            body = attributes,
+            type = 'application/json'
+        )
+
+
     def deactivate(self, app_id):
         '''
         Deactivates the application with app_id
@@ -74,6 +107,9 @@ class Application(Area):
         '''
         return self.transport.GET(url = "/app/%r" % app_id)
     
+    def get_items(self, app_id, **kwargs):
+        return self.transport.GET(url = "/item/app/%r/" % app_id, **kwargs)
+
     def list_in_space(self, space_id):
         '''
         Returns a list of all the visible apps in a space.
@@ -82,9 +118,6 @@ class Application(Area):
             space_id: Space ID as a string
         '''
         return self.transport.GET(url = "/app/space/%r/" % space_id)
-
-    def get_items(self, app_id, **kwargs):
-        return self.transport.GET(url = "/item/app/%r/" % app_id, **kwargs)
 
 class Task(Area):
     def __init__(self, *args, **kwargs):
@@ -165,4 +198,14 @@ class Space(Area):
             body = attributes, 
             type = 'application/json'
         )
-        
+
+# class File(Area):
+#     """Files area"""
+#     def __init__(self, *args, **kwargs):
+#         super(File, self).__init__(*args, **kwargs)
+      
+#     def set_available(id):
+#         return self.transport.POST(url = "/file/%r/available" % id)
+    
+#     def attach(self, id, ref_type, ref_id):
+#         pass

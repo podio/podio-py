@@ -63,10 +63,11 @@ class KeepAliveHeaders(object):
 class TransportException(Exception):
     def __init__(self, status, content):
         self.status = status
+        self.content = content
     def __str__(self):
         return repr(self)
     def __repr__(self):
-        return "TransportException(%r)" % (self.status)
+        return "TransportException(%s): %s" % (self.status, self.content)
 
 
 class HttpTransport(object):
@@ -92,10 +93,10 @@ class HttpTransport(object):
             body = self._generate_body()
         elif('type' in kwargs):
             body = kwargs['body']
-            self._headers.update({'content-type': kwargs['type']})
+            self.headers.update({'content-type': kwargs['type']})
         else:
             body = self._generate_body() #hack
-        if('url' not in kwargs):
+        if 'url' not in kwargs:
             url = self.get_url()
         else:
             url = self.get_url(kwargs['url'])
@@ -138,7 +139,7 @@ class HttpTransport(object):
             del self._headers['content-type']
 
     def get_url(self, url=None):
-        if not url:
+        if url is None:
             url = self._url_template % {
                 "domain": self._api_url,
                 "generated_url" : self._stack_collapser(self._attribute_stack),
@@ -156,5 +157,4 @@ class HttpTransport(object):
                     return url
                 internal_params = internal_params['GET']
             url += self._generate_params(internal_params)
-        print url
         return url
