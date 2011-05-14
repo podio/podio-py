@@ -18,6 +18,15 @@ print c.Space.find_by_url("https://remaxtraditions.podio.com/remaxtraditions/") 
 
 items = c.Application.get_items(48294)['items']
 
+
+#To create an item
+item = {
+	"fields":[
+		{"external_id":"org-name", "values":[{"value":"The Items API sucks"}]}
+	]
+}
+#print c.Application.find(179652)
+c.Item.create($app_id, item)
 			
 #Undefined and created at runtime example
 #print c.transport.GET.user.status()
