@@ -228,7 +228,7 @@ class Hook(Area):
         attributes = json.dumps(attributes)
         return self.transport.POST(
             url = '/hook/%r/%r/' % (hookable_type, hookable_id),
-            body = attributes
+            body = attributes,
             type = 'application/json'
         )
     def verify(self, hook_id):
@@ -255,8 +255,8 @@ class Connection(Area):
     def create(self, attributes):
         attributes = json.dumps(attributes)
         return self.transport.POST(
-            url = '/connection/'
-            body = attributes
+            url = '/connection/',
+            body = attributes,
             type = 'application/json'
         )
     
