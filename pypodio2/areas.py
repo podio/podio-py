@@ -154,6 +154,9 @@ class Space(Area):
     def __init__(self, *args, **kwargs):
         super(Space, self).__init__(*args, **kwargs)
     
+    def find(self, space_id):
+        return self.transport.GET(url = '/space/%r' % id)
+    
     def find_by_url(self, space_url, id_only=True):
         '''
         Returns a space ID given the URL of the space.
@@ -197,6 +200,34 @@ class Space(Area):
             url = "/space/", 
             body = attributes, 
             type = 'application/json'
+        )
+
+class Hook(Area):
+    def __init__(self, *args, **kwargs):
+        super(Hook, self).__init__(*args, **kwargs)
+    
+    def create(self, hookable_type, hookable_id, attributes):
+        attributes = json.dumps(attributes)
+        return self.transport.POST(
+            url = '/hook/%r/%r/' % (hookable_type, hookable_id),
+            body = attributes
+            type = 'application/json'
+        )
+    def verify(self, hook_id):
+        return self.transport.POST(url = '/hook/%r/verify/request' % hook_id)
+
+    def validate(self, hook_id, code):
+        return self.transport.POST(
+            url = '/hook/%r/verify/validate' % hook_id,
+            code = code
+        )
+
+    def delete(self, hook_id):
+        return self.transport.DELETE (url = '/hook/%r' % hook_id)
+    
+    def find_all_for(self, hookable_type, hookable_id):
+        return self.transport.GET(
+            url = '/hook/%r/%r/' % (hookable_type, hookable_id)
         )
 
 # class File(Area):
