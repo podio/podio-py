@@ -87,6 +87,11 @@ class HttpTransport(object):
     def __call__(self, *args, **kwargs):
         self._attribute_stack += [str(a) for a in args]
         self._params = kwargs
+        if 'url' not in kwargs:
+            url = self.get_url()
+        else:
+            url = self.get_url(kwargs['url'])
+        
         if self._method == "POST" and 'type' not in kwargs:
             self.headers.update(
             {'content-type':'application/x-www-form-urlencoded'})
@@ -96,10 +101,7 @@ class HttpTransport(object):
             self.headers.update({'content-type': kwargs['type']})
         else:
             body = self._generate_body() #hack
-        if 'url' not in kwargs:
-            url = self.get_url()
-        else:
-            url = self.get_url(kwargs['url'])
+        
         response, data = self._http.request(url, self._method, body=body, headers=self.headers)
         self._attribute_stack = []
         return self._handle_response(response, data)
