@@ -248,3 +248,54 @@ class Hook(Area):
             url = '/hook/%r/%r/' % (hookable_type, hookable_id)
         )
 
+class Connection(Area):
+    def __init__(self, *args, **kwargs):
+        super(Connection, self).__init__(*args, **kwargs)
+    
+    def create(self, attributes):
+        attributes = json.dumps(attributes)
+        return self.transport.POST(
+            url = '/connection/'
+            body = attributes
+            type = 'application/json'
+        )
+    
+    def find(self, conn_id):
+        return self.transport.GET(
+            url = '/connection/%r'
+        )
+    
+    def delete(self, conn_id):
+        return self.transport.DELETE(
+            url = '/connection/%r'
+        )
+    
+    def reload(self, conn_id):
+        return self.transport.POST(
+            url = '/connection/%r/load'
+        )
+
+class Notification(Area):
+    def __init__(self, *args, **kwargs):
+        super(Notification, self).__init__(*args, **kwargs)
+    
+    def find(self, notification_id):
+        return self.transport.GET(url = '/notification/%r' % notification_id)
+    
+    def mark_as_viewed(self, notification_id):
+        return self.transport.POST(
+            url = '/notification/%r/viewed' % notification_id
+        )
+    
+    def mark_all_as_viewed(self):
+        return self.transport.POST(url = '/notification/viewed')
+    
+    def star(self, notification_id):
+        return self.transport.POST(
+            url = '/notification/%r/star' % notification_id
+        )
+    def unstar(self, notification_id):
+        return self.transport.POST(
+            url = '/notification/%r/star' % notification_id
+        )
+        
