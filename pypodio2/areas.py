@@ -230,13 +230,3 @@ class Hook(Area):
             url = '/hook/%r/%r/' % (hookable_type, hookable_id)
         )
 
-# class File(Area):
-#     """Files area"""
-#     def __init__(self, *args, **kwargs):
-#         super(File, self).__init__(*args, **kwargs)
-      
-#     def set_available(id):
-#         return self.transport.POST(url = "/file/%r/available" % id)
-    
-#     def attach(self, id, ref_type, ref_id):
-#         pass
