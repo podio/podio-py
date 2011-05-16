@@ -21,31 +21,31 @@ class Item(Area):
             Dict with item info
         '''
         if basic:
-            return self.transport.GET(url = "/item/%r/basic" % item_id)
-        return self.transport.GET(kwargs, url = "/item/%r" % item_id)
+            return self.transport.GET(url = '/item/%r/basic' % item_id)
+        return self.transport.GET(kwargs, url = '/item/%r' % item_id)
 
     def next(self, item_id, **kwargs):
-        return self.transport.GET(url = "/item/%r/next" % item_id)
+        return self.transport.GET(url = '/item/%r/next' % item_id)
     
     def prev(self, item_id, **kwargs):
-        return self.transport.GET(url = "/item/%r/previous" % item_id)
+        return self.transport.GET(url = '/item/%r/previous' % item_id)
     
     def find_all_by_external_id(self, app_id, external_id):
-        return self.transport.GET(url = "/item/app/%r/v2/?external_id=%r" % (app_id, external_id))
+        return self.transport.GET(url = '/item/app/%r/v2/?external_id=%r' % (app_id, external_id))
     
     def revisions(self, item_id):
-        return self.transport.GET(url = "/item/%r/revision/" % item_id)
+        return self.transport.GET(url = '/item/%r/revision/' % item_id)
     
     def revision_difference(self, item_id, revision_from_id, revision_to_id):
-        return self.transport.GET(url = "/item/%r/revision/%r/%r" % (item_id, revision_from_id, revision_to_id))
+        return self.transport.GET(url = '/item/%r/revision/%r/%r' % (item_id, revision_from_id, revision_to_id))
     
     def create(self, app_id, attributes):
         if type(attributes) != dict:
-            return ApiErrorException("Must be of type dict")
+            return ApiErrorException('Must be of type dict')
         attributes = json.dumps(attributes)
         
         return self.transport.POST(
-            url = "/item/app/%d/" % app_id,
+            url = '/item/app/%d/' % app_id,
             body = attributes,
             type = 'application/json'
     )
@@ -62,15 +62,15 @@ class Application(Area):
           Returns:
             Python dict of JSON response
         '''
-        return self.transport.POST(url = "/app/%r/activate" % app_id)
+        return self.transport.POST(url = '/app/%r/activate' % app_id)
     
     def create(self, attributes):
         if type(attributes) != dict:
-            return ApiErrorException("Must be of type dict")
+            return ApiErrorException('Must be of type dict')
         attributes = json.dumps(attributes)
 
         return self.transport.POST(
-            url = "/app/", 
+            url = '/app/', 
             body = attributes,
             type = 'application/json'
         )
@@ -85,7 +85,7 @@ class Application(Area):
           Returns:
             Python dict of JSON response
         '''
-        return self.transport.POST(url = "/app/%r/deactivate" % app_id)
+        return self.transport.POST(url = '/app/%r/deactivate' % app_id)
     
     def delete(self, app_id):
         '''
@@ -94,7 +94,7 @@ class Application(Area):
             Arguments:
               app_id: Application ID as string or int
         '''
-        return self.transport.DELETE(url="/app/%r" % app_id)
+        return self.transport.DELETE(url='/app/%r' % app_id)
     
     def find(self, app_id):
         '''
@@ -105,10 +105,10 @@ class Application(Area):
           Returns:
             Python dict of JSON response
         '''
-        return self.transport.GET(url = "/app/%r" % app_id)
+        return self.transport.GET(url = '/app/%r' % app_id)
     
     def get_items(self, app_id, **kwargs):
-        return self.transport.GET(url = "/item/app/%r/" % app_id, **kwargs)
+        return self.transport.GET(url = '/item/app/%r/' % app_id, **kwargs)
 
     def list_in_space(self, space_id):
         '''
@@ -117,7 +117,7 @@ class Application(Area):
           Arguemtns:
             space_id: Space ID as a string
         '''
-        return self.transport.GET(url = "/app/space/%r/" % space_id)
+        return self.transport.GET(url = '/app/space/%r/' % space_id)
 
 class Task(Area):
     def __init__(self, *args, **kwargs):
@@ -136,7 +136,7 @@ class Task(Area):
         Arguments:
         task_id: Task ID as string or int
         '''
-        return self.transport.DELETE(url="/task/%r" % task_id)
+        return self.transport.DELETE(url='/task/%r' % task_id)
             
     def complete(self, task_id):
         '''
@@ -144,11 +144,29 @@ class Task(Area):
         Arguments:
             task_id: Task ID as string or int
         '''
-        return self.transport.POST(url = "/task/%r/complete" % task_id)
+        return self.transport.POST(url = '/task/%r/complete' % task_id)
 
 class User(Area):
     def __init__(self, *args, **kwargs):
         super(User, self).__init__(*args, **kwargs)
+    
+    def current(self):
+        return self.transport.get(url = '/user/')
+
+class Status(Area):
+    def __init__(self, *args, **kwargs):
+        super(Status, self).__init__(*args, **kwargs)
+    
+    def find(self, status_id):
+        return self.transport.GET(url = '/status/%r' % status_id)
+    
+    def create(self, space_id, attributes):
+        attributes = json.dumps(attributes)
+        return self.transport.POST(
+            url = '/status/space/%r/' % space_id,
+            body = attributes,
+            type = 'application/json'
+        )
     
 class Space(Area):
     def __init__(self, *args, **kwargs):
@@ -169,7 +187,7 @@ class Space(Area):
         '''        
         from urllib import urlencode
         
-        resp = self.transport.GET(url = "/space/url?%s" % urlencode(dict(url=space_url)))
+        resp = self.transport.GET(url = '/space/url?%s' % urlencode(dict(url=space_url)))
         if id_only:
             return resp['space_id']
         return resp
@@ -183,7 +201,7 @@ class Space(Area):
           returns:
             Dict containing details of spaces
         '''
-        return self.transport.GET(url = "/org/%r/space/" % org_id)
+        return self.transport.GET(url = '/org/%r/space/' % org_id)
     
     def create(self, attributes):
         '''
@@ -194,10 +212,10 @@ class Space(Area):
             Dict containing details of newly created space
         '''
         if type(attributes) != dict:
-            raise ApiErrorException("Dictionary of values expected")
+            raise ApiErrorException('Dictionary of values expected')
         attributes = json.dumps(attributes)
         return self.transport.POST(
-            url = "/space/", 
+            url = '/space/', 
             body = attributes, 
             type = 'application/json'
         )
