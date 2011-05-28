@@ -232,7 +232,7 @@ class Hook(Area):
             type = 'application/json'
         )
     def verify(self, hook_id):
-        return self.transport.POST(url = '/hook/%r/verify/request' % hook_id)
+        return self.transport.POST(url='/hook/%r/verify/request' % hook_id)
 
     def validate(self, hook_id, code):
         return self.transport.POST(

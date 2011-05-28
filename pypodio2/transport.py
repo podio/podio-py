@@ -120,6 +120,8 @@ class HttpTransport(object):
             return self._generate_params(internal_params)[1:]
 
     def _handle_response(self, response, data):
+        if not data:
+            data = {}
         if response.status >= 400:
             raise TransportException(response, data)
         return simplejson.loads(data)
