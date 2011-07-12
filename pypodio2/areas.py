@@ -21,23 +21,23 @@ class Item(Area):
             Dict with item info
         '''
         if basic:
-            return self.transport.GET(url = '/item/%r/basic' % item_id)
-        return self.transport.GET(kwargs, url = '/item/%r' % item_id)
+            return self.transport.GET(url = '/item/%d/basic' % item_id)
+        return self.transport.GET(kwargs, url = '/item/%d' % item_id)
 
     def next(self, item_id, **kwargs):
-        return self.transport.GET(url = '/item/%r/next' % item_id)
+        return self.transport.GET(url = '/item/%d/next' % item_id)
     
     def prev(self, item_id, **kwargs):
-        return self.transport.GET(url = '/item/%r/previous' % item_id)
+        return self.transport.GET(url = '/item/%d/previous' % item_id)
     
     def find_all_by_external_id(self, app_id, external_id):
-        return self.transport.GET(url = '/item/app/%r/v2/?external_id=%r' % (app_id, external_id))
+        return self.transport.GET(url = '/item/app/%d/v2/?external_id=%r' % (app_id, external_id))
     
     def revisions(self, item_id):
-        return self.transport.GET(url = '/item/%r/revision/' % item_id)
+        return self.transport.GET(url = '/item/%d/revision/' % item_id)
     
     def revision_difference(self, item_id, revision_from_id, revision_to_id):
-        return self.transport.GET(url = '/item/%r/revision/%r/%r' % (item_id, revision_from_id, revision_to_id))
+        return self.transport.GET(url = '/item/%d/revision/%d/%d' % (item_id, revision_from_id, revision_to_id))
     
     def create(self, app_id, attributes):
         if type(attributes) != dict:
@@ -49,6 +49,9 @@ class Item(Area):
             body = attributes,
             type = 'application/json'
     )
+
+    def delete(self, item_id):
+        return self.transport.DELETE(url = '/item/%d' % item_id)
 
 class Application(Area):
     def __init__(self, *args, **kwargs):
