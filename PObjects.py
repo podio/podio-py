@@ -1,4 +1,4 @@
-class PObject(object):
+class Object(object):
 	def __init__(self,client,**kw):
 		self.client = client
 		self.kw = kw
@@ -27,7 +27,7 @@ class PObject(object):
 		"""
 		Add a comment to object
 		"""
-		return PComment.add_to(self, text)
+		return Comment.add_to(self, text)
 		
 	@property
 	def comments(self):
@@ -37,7 +37,7 @@ class PObject(object):
 		"""
 		cs = self.client.transport.GET(
 						url='/comment/%s/%r/' % (self.ptype, self.id))
-		return [PComment(self.client,**useAsciiKeys(c)) for c in cs]
+		return [Comment(self.client,**useAsciiKeys(c)) for c in cs]
 			
 		
 	def create(self,**kw):
@@ -52,7 +52,7 @@ class PObject(object):
 		self.client.transport.DELETE(
 			url='/%s/%r'%(self.ptype,self.id))
 			
-class PComment(PObject):
+class Comment(Object):
 	ptype = 'comment'
 	
 	@property
@@ -71,20 +71,20 @@ class PComment(PObject):
 				url= '/comment/%s/%r/' % (tp,pobj.id),
 				body= json.dumps(attrs),
 				type= 'application/json')
-		return PComment(pobj.client, **useAsciiKeys(response))
+		return Comment(pobj.client, **useAsciiKeys(response))
 		
 			
-class PSpace(PObject):
+class Space(Object):
 	ptype = 'space'
 	
 		
-class Notification(PObject):
+class Notification(Object):
 	ptype = 'notification'
 	
 	star = lambda s: s.post('star')
 	
 
-class PApplication(PObject):
+class Application(Object):
 	ptype ='app'
 	
 	activate = lambda s: s.post('activate')
@@ -93,15 +93,15 @@ class PApplication(PObject):
 	@classmethod
 	def fromPodio(klass,client,app_id):
 		app = client.Application.find(app_id)
-		return PApplication(client, **useAsciiKeys(app))
+		return Application(client, **useAsciiKeys(app))
 		
 	@property
 	def items(self):
 		items = self.client.Application.get_items(self.id)['items']
-		return [PItem.fromPodio(self.client,i) for i in items]
+		return [Item.fromPodio(self.client,i) for i in items]
 			
 				
-class PItem(PObject):
+class Item(Object):
 	ptype = 'item'
 	
 	def __iter__(self):
@@ -109,7 +109,7 @@ class PItem(PObject):
 		
 	@classmethod
 	def fromPodio(klass,client,kw):
-		return PItem(client,**useAsciiKeys(kw))
+		return Item(client,**useAsciiKeys(kw))
 		
 	def __getattr__(self,k):
 		if self.kw.has_key(k):
@@ -136,7 +136,7 @@ class PItem(PObject):
 		
 	def next(self):
 		try:
-			PItem(self.transport,**self.get('next'))
+			Item(self.transport,**self.get('next'))
 		except:
 			raise StopIteration
 			
@@ -148,11 +148,14 @@ def useAsciiKeys(d):
 			
 
 if __name__ == '__main__':
-	from mydata import client_data
+	from mydata import config 
 	from pypodio2 import api
+	client_data = [config[k] for k in 'client_id client_secret username password'.split()]
 	c = api.OAuthClient(*client_data)
 	
-	app = PApplication.fromPodio(c,<app-id>)
+	app = Application.fromPodio(c, config['app_id'])
 	for i in app.items:
 		print i.title, i.get_field('date')
 		i.add_comment("No comment")
+		for c in i.comments:
+			print "Comment:", c
