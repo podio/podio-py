@@ -11,17 +11,6 @@ class Object(object):
 	@property
 	def id(self):
 		return self.kw[self.ptype + '_id']
-		
-	#def get(self):
-	#	url = '/%s/%r' %(self.ptype,self.id)
-	#	return self.client.transport.GET(url=url)
-		
-	#def post(self,extra):
-	#	self.client.transport.POST(
-	#		url='/%s/%r/%s' % (self.ptype,
-	#							self.id,
-	#							extra))
-
 
 	def add_comment(self, text):
 		"""
@@ -76,8 +65,7 @@ class Comment(Object):
 			
 class Space(Object):
 	ptype = 'space'
-	
-		
+			
 class Notification(Object):
 	ptype = 'notification'
 	
@@ -124,7 +112,6 @@ class Item(Object):
 		else:
 			raise KeyError
 			
-
 	def get_field(self,k):
 		for f in self.kw['fields']:
 			if k == f['external_id']: return f['values']
