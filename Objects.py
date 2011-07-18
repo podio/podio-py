@@ -72,22 +72,7 @@ class Notification(Object):
 	star = lambda s: s.post('star')
 	
 
-class Application(Object):
-	ptype ='app'
-	
-	activate = lambda s: s.post('activate')
-	deactivate = lambda s: s.post('deactivate')
-	
-	@classmethod
-	def fromPodio(klass,client,app_id):
-		app = client.Application.find(app_id)
-		return Application(client, **useAsciiKeys(app))
-		
-	@property
-	def items(self):
-		items = self.client.Application.get_items(self.id)['items']
-		return [Item.fromPodio(self.client,i) for i in items]
-			
+
 				
 class Item(Object):
 	ptype = 'item'
@@ -95,8 +80,18 @@ class Item(Object):
 	def __iter__(self):
 		return self
 		
+	def check(self):
+		"""
+		Is it conformant?
+		"""
+		if self.kw.has_key('fields'):
+			return bool(self.kw['fields'])
+		else:
+			return False
+		
 	@classmethod
-	def fromPodio(klass,client,kw):
+	def fromPodio(klass,client,item_id):
+		kw = client.Item.find(item_id)
 		return Item(client,**useAsciiKeys(kw))
 		
 	def __getattr__(self,k):
@@ -127,11 +122,43 @@ class Item(Object):
 		except:
 			raise StopIteration
 			
+			
+class Application(Object):
+	ptype ='app'
+	itemclass = Item
+
+	activate = lambda s: s.post('activate')
+	deactivate = lambda s: s.post('deactivate')
+
+	@classmethod
+	def fromPodio(klass,client,app_id):
+		app = client.Application.find(app_id)
+		return Application(client, **useAsciiKeys(app))
+
+	@property
+	def items(self):
+		items = self.client.Application.get_items(self.id)['items']
+		return [Item.fromPodio(self.client,i['item_id']) for i in items]
+
+
+	def add_item(self,**fields):
+		pfields = {'fields': [simpleField(k,v) for k,v in fields.items()]}
+		item = self.client.Item.create(self.id, pfields)
+		#nitem = super(Item, self.itemclass).__new__(self.itemclass, self.client,item)
+		#return Item(self.client,**item['fields'])
+		return item
+			
 
 # Utils
 			
 def useAsciiKeys(d):
 	return dict([(str(k),v) for k,v in d.items()])
+	
+def simpleField(k,v):
+	"""
+	Just 1 value (v) for key k
+	"""
+	return 	{"external_id":k, "values":[{"value":v}]}
 			
 
 if __name__ == '__main__':
@@ -146,3 +173,5 @@ if __name__ == '__main__':
 		i.add_comment("No comment")
 		for c in i.comments:
 			print "Comment:", c
+		
+	
