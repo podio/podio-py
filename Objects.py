@@ -41,6 +41,21 @@ class Object(object):
 		self.client.transport.DELETE(
 			url='/%s/%r'%(self.ptype,self.id))
 			
+class User(Object):
+	ptype = 'user'
+	
+	@classmethod
+	def current(klass,client):
+		profile = client.transport.GET(url='/%s/profile/' % klass.ptype)
+		return User(client,**useAsciiKeys(profile))
+		
+	def __getattr__(self,k):
+		if self.kw.has_key(k):
+			return self.kw[k]
+		else:
+			raise AttributeError, "Not found in Podio dict: %s" % k
+	
+			
 class Comment(Object):
 	ptype = 'comment'
 	
@@ -165,13 +180,15 @@ if __name__ == '__main__':
 	from mydata import config 
 	from pypodio2 import api
 	client_data = [config[k] for k in 'client_id client_secret username password'.split()]
-	c = api.OAuthClient(*client_data)
+	client = api.OAuthClient(*client_data)
 	
-	app = Application.fromPodio(c, config['app_id'])
+	app = Application.fromPodio(client, config['app_id'])
 	for i in app.items:
 		print i.title, i.get_field('date')
 		i.add_comment("No comment")
-		for c in i.comments:
-			print "Comment:", c
+		for cm in i.comments:
+			print "Comment:", cm
+	import pdb
+	user = User.current(client)
 		
 	
