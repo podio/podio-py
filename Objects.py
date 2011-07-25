@@ -1,3 +1,4 @@
+import json
 class Object(object):
 	def __init__(self,client,**kw):
 		self.client = client
@@ -27,10 +28,19 @@ class Object(object):
 		cs = self.client.transport.GET(
 						url='/comment/%s/%r/' % (self.ptype, self.id))
 		return [Comment(self.client,**useAsciiKeys(c)) for c in cs]
+		
+	def add_tags(self,*texts):
+		"""
+		Add tags to the object
+		"""
+		attrs = json.dumps([s.encode('utf8') for s in texts])
+		self.client.transport.POST(
+			url='/tag/%s/%r/' % (self.ptype,self.id),
+			body=attrs,
+			type='application/json')
 			
 		
 	def create(self,**kw):
-		import json
 		attrs = json.dumps(kw)
 		return self.client.transport.POST(
 			url = '/%s/'%self.ptype,
@@ -44,6 +54,9 @@ class Object(object):
 class User(Object):
 	ptype = 'user'
 	
+	def __str__(self):
+		return self.kw['name']
+		
 	@classmethod
 	def current(klass,client):
 		profile = client.transport.GET(url='/%s/profile/' % klass.ptype)
@@ -68,7 +81,6 @@ class Comment(Object):
 	
 	@classmethod
 	def add_to(klass,pobj,text):
-		import json
 		tp = pobj.ptype
 		attrs = dict(value=text)
 		response = pobj.client.transport.POST(
@@ -107,7 +119,7 @@ class Item(Object):
 	@classmethod
 	def fromPodio(klass,client,item_id):
 		kw = client.Item.find(item_id)
-		return Item(client,**useAsciiKeys(kw))
+		return klass(client,**useAsciiKeys(kw))
 		
 	def __getattr__(self,k):
 		if self.kw.has_key(k):
@@ -126,6 +138,9 @@ class Item(Object):
 		for f in self.kw['fields']:
 			if k == f['external_id']: return f['values']
 		return None
+		
+	def set_field(self,k,v):
+		self.kw['fields'][k] = [aValue(v)]
 		
 	@property	
 	def keys(self):
@@ -148,20 +163,20 @@ class Application(Object):
 	@classmethod
 	def fromPodio(klass,client,app_id):
 		app = client.Application.find(app_id)
-		return Application(client, **useAsciiKeys(app))
+		return klass(client, **useAsciiKeys(app))
 
 	@property
 	def items(self):
 		items = self.client.Application.get_items(self.id)['items']
-		return [Item.fromPodio(self.client,i['item_id']) for i in items]
+		return [self.itemclass.fromPodio(self.client,i['item_id']) for i in items]
 
 
 	def add_item(self,**fields):
 		pfields = {'fields': [simpleField(k,v) for k,v in fields.items()]}
-		item = self.client.Item.create(self.id, pfields)
+		fields = self.client.Item.create(self.id, pfields)
 		#nitem = super(Item, self.itemclass).__new__(self.itemclass, self.client,item)
 		#return Item(self.client,**item['fields'])
-		return item
+		return Item(self.client,**useAsciiKeys(fields))
 			
 
 # Utils
@@ -169,15 +184,18 @@ class Application(Object):
 def useAsciiKeys(d):
 	return dict([(str(k),v) for k,v in d.items()])
 	
+def aValue(v):
+	return {'value': v}
+	
 def simpleField(k,v):
 	"""
 	Just 1 value (v) for key k
 	"""
-	return 	{"external_id":k, "values":[{"value":v}]}
+	return 	{"external_id":k, "values":[aValue(v)]}
 			
 
 if __name__ == '__main__':
-	from mydata import config 
+	from mydata import config
 	from pypodio2 import api
 	client_data = [config[k] for k in 'client_id client_secret username password'.split()]
 	client = api.OAuthClient(*client_data)
@@ -185,7 +203,7 @@ if __name__ == '__main__':
 	app = Application.fromPodio(client, config['app_id'])
 	for i in app.items:
 		print i.title, i.get_field('date')
-		i.add_comment("No comment")
+		#i.add_comment("No comment")
 		for cm in i.comments:
 			print "Comment:", cm
 	import pdb
