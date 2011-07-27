@@ -309,7 +309,8 @@ class Files(Area):
 
     def find(self, file_id):
         pass
-        
+
     def find_raw(self, file_id):
-        tupleize = lambda x,y: (x,y)
-        return self.transport.GET(url='/file/%d/raw' % file_id, handler=tupleize)
+        '''Returns raw file as string. Pass to a file object'''
+        raw_handler = lambda resp, data: data
+        return self.transport.GET(url='/file/%d/raw' % file_id, handler=raw_handler)
