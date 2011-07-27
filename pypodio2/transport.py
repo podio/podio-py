@@ -87,6 +87,7 @@ class HttpTransport(object):
     def __call__(self, *args, **kwargs):
         self._attribute_stack += [str(a) for a in args]
         self._params = kwargs
+
         if 'url' not in kwargs:
             url = self.get_url()
         else:
@@ -103,8 +104,12 @@ class HttpTransport(object):
             body = self._generate_body() #hack
         
         response, data = self._http.request(url, self._method, body=body, headers=self.headers)
+        
         self._attribute_stack = []
-        return self._handle_response(response, data)
+        if 'handler' in kwargs:
+            return kwargs['handler'](response, data)
+        else:
+            return self._handle_response(response, data)
     
     def _generate_params(self, params):
         body = self._params_template % urllib.urlencode(params)
@@ -115,8 +120,10 @@ class HttpTransport(object):
     def _generate_body(self):
         if self._method == 'POST':
             internal_params = self._params.copy()
+
             if 'GET' in internal_params:
                 del internal_params['GET']
+                
             return self._generate_params(internal_params)[1:]
 
     def _handle_response(self, response, data):
@@ -125,17 +132,6 @@ class HttpTransport(object):
         if response.status >= 400:
             raise TransportException(response, data)
         return simplejson.loads(data)
-
-    def __getitem__(self, name):
-        self._attribute_stack.append(name)
-        return self
-
-    def __getattr__(self, name):
-        if name in self._supported_methods:
-            self._method = name
-        elif not name.endswith(')'):
-            self._attribute_stack.append(name)
-        return self
     
     def _clear_headers(self):
         '''Clear content-type'''
@@ -154,11 +150,28 @@ class HttpTransport(object):
                 'generated_url': url[1:]
             }   
             del self._params['url']      
+
         if len(self._params):
             internal_params = self._params.copy()
+            
+            if 'handler' in internal_params:
+                del internal_params['handler']
+
             if self._method == 'POST':
                 if "GET" not in internal_params:
                     return url
                 internal_params = internal_params['GET']
             url += self._generate_params(internal_params)
         return url
+
+    def __getitem__(self, name):
+        self._attribute_stack.append(name)
+        return self
+
+    def __getattr__(self, name):
+        if name in self._supported_methods:
+            self._method = name
+        elif not name.endswith(')'):
+            self._attribute_stack.append(name)
+        return self
+    

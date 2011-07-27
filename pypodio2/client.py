@@ -14,5 +14,6 @@ class Client(object):
         self.transport = transport
 
     def __getattr__(self, name):
+        new_trans = self.transport
         area = getattr(areas, name)
-        return area(self.transport)
+        return area(new_trans)

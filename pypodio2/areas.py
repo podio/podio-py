@@ -3,6 +3,7 @@ class Area(object):
     'Represents a Podio Area'
     def __init__(self, transport, *args, **kwargs):
         self.transport = transport
+    
     def sanitize_id(self, item_id):
         if(type(item_id) == int):
             return str(item_id)
@@ -301,4 +302,14 @@ class Notification(Area):
         return self.transport.POST(
             url = '/notification/%r/star' % notification_id
         )
+
+class Files(Area):
+    def __init__(self, *args, **kwargs):
+        super(Files, self).__init__(*args, **kwargs)  
+
+    def find(self, file_id):
+        pass
         
+    def find_raw(self, file_id):
+        tupleize = lambda x,y: (x,y)
+        return self.transport.GET(url='/file/%d/raw' % file_id, handler=tupleize)
