@@ -52,7 +52,7 @@ class Item(Area):
     )
 
     def delete(self, item_id):
-        return self.transport.DELETE(url = '/item/%d' % item_id)
+        return self.transport.DELETE(url = '/item/%d' % item_id, handler=lambda x,y: None)
 
 class Application(Area):
     def __init__(self, *args, **kwargs):
