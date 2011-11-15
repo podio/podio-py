@@ -26,7 +26,7 @@ item = {
 	]
 }
 #print c.Application.find(179652)
-c.Item.create($app_id, item)
+c.Item.create(app_id, item)
 			
 #Undefined and created at runtime example
 #print c.transport.GET.user.status()
