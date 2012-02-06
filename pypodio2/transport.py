@@ -32,7 +32,7 @@ class OAuthAuthorization(object):
                 'client_secret':secret,
                 'username':login,
                 'password':password}
-        h = httplib2.Http()
+        h = Http(disable_ssl_certificate_validation=True)
         headers = {'content-type':'application/x-www-form-urlencoded'}
         resp, content = h.request(domain + "/oauth/token", "POST",
                                   urllib.urlencode(body), headers=headers)
@@ -78,7 +78,7 @@ class HttpTransport(object):
         self._attribute_stack = []
         self._method = "GET"
         self._posts = []
-        self._http = httplib2.Http()
+        self._http = Http(disable_ssl_certificate_validation=True)
         self._params = {}
         self._url_template = '%(domain)s/%(generated_url)s'
         self._stack_collapser = "/".join
