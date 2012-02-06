@@ -1,9 +1,10 @@
-import httplib2
-import urllib
+from httplib2 import Http
+from urllib import urlencode
 try:
-    import json as simplejson
+    import json
 except ImportError:
-    import simplejson
+    import simplejson as json
+
 
 class OAuthToken(object):
     '''
@@ -17,15 +18,14 @@ class OAuthToken(object):
         self.expires_in = resp['expires_in']
         self.access_token = resp['access_token']
         self.refresh_token = resp['refresh_token']
-    
+
     def to_headers(self):
         return {'authorization':"OAuth2 %s" % self.access_token}
 
 
 class OAuthAuthorization(object):
-    """
-    Generates headers for Podio OAuth2 Authorization"
-    """
+    """Generates headers for Podio OAuth2 Authorization"""
+
     def __init__(self, login, password, key, secret, domain):
         body = {'grant_type':'password',
                 'client_id':key,
@@ -34,43 +34,48 @@ class OAuthAuthorization(object):
                 'password':password}
         h = Http(disable_ssl_certificate_validation=True)
         headers = {'content-type':'application/x-www-form-urlencoded'}
-        resp, content = h.request(domain + "/oauth/token", "POST",
-                                  urllib.urlencode(body), headers=headers)
-        if resp['status'] == '200':
-             self.token = OAuthToken(simplejson.loads(content)).to_headers()
+        response, data = h.request(domain + "/oauth/token", "POST",
+                                   urlencode(body), headers=headers)
+        self.token = OAuthToken(_handle_response(response, data)).to_headers()
+
     def __call__(self):
         return self.token
+
 
 class UserAgentHeaders(object):
     def __init__(self, base_headers_factory, user_agent):
         self.base_headers_factory = base_headers_factory
         self.user_agent = user_agent
-    
+
     def __call__(self):
         headers = self.base_headers_factory()
         headers['User-Agent'] = self.user_agent
         return headers
 
+
 class KeepAliveHeaders(object):
+
     def __init__(self, base_headers_factory):
         self.base_headers_factory = base_headers_factory
-    
+
     def __call__(self):
         headers = self.base_headers_factory()
         headers['Connection'] = 'Keep-Alive'
         return headers
 
+
 class TransportException(Exception):
+
     def __init__(self, status, content):
         self.status = status
         self.content = content
+
     def __str__(self):
-        return repr(self)
-    def __repr__(self):
         return "TransportException(%s): %s" % (self.status, self.content)
 
 
 class HttpTransport(object):
+
     def __init__(self, url, headers_factory):
         self._api_url = url
         self.headers = headers_factory()
@@ -92,7 +97,7 @@ class HttpTransport(object):
             url = self.get_url()
         else:
             url = self.get_url(kwargs['url'])
-        
+
         if self._method == "POST" and 'type' not in kwargs:
             self.headers.update(
             {'content-type':'application/x-www-form-urlencoded'})
@@ -102,17 +107,15 @@ class HttpTransport(object):
             self.headers.update({'content-type': kwargs['type']})
         else:
             body = self._generate_body() #hack
-        
+
         response, data = self._http.request(url, self._method, body=body, headers=self.headers)
-        
+
         self._attribute_stack = []
-        if 'handler' in kwargs:
-            return kwargs['handler'](response, data)
-        else:
-            return self._handle_response(response, data)
-    
+        handler = kwargs.get('handler', _handle_response)
+        handler(response, data)
+
     def _generate_params(self, params):
-        body = self._params_template % urllib.urlencode(params)
+        body = self._params_template % urlencode(params)
         if body is None:
             return ''
         return body
@@ -123,16 +126,9 @@ class HttpTransport(object):
 
             if 'GET' in internal_params:
                 del internal_params['GET']
-                
+
             return self._generate_params(internal_params)[1:]
 
-    def _handle_response(self, response, data):
-        if not data:
-            data = {}
-        if response.status >= 400:
-            raise TransportException(response, data)
-        return simplejson.loads(data)
-    
     def _clear_headers(self):
         '''Clear content-type'''
         if 'content-type' in self._headers:
@@ -148,12 +144,12 @@ class HttpTransport(object):
             url = self._url_template % {
                 'domain': self._api_url,
                 'generated_url': url[1:]
-            }   
-            del self._params['url']      
+            }
+            del self._params['url']
 
         if len(self._params):
             internal_params = self._params.copy()
-            
+
             if 'handler' in internal_params:
                 del internal_params['handler']
 
@@ -174,4 +170,11 @@ class HttpTransport(object):
         elif not name.endswith(')'):
             self._attribute_stack.append(name)
         return self
-    
+
+
+def _handle_response(response, data):
+    if not data:
+        data = {}
+    if response.status >= 400:
+        raise TransportException(response, data)
+    return json.loads(data)

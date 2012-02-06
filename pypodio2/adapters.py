@@ -1,15 +1,15 @@
 try:
-    import json as simplejson
+    import json
 except ImportError:
-    import simplejson
+    import simplejson as json
 
-from pypodio2 import client
+from .client import FailedRequest
 
 def json_response(resp):
 	try:
-		return simplejson.loads(resp)
+		return json.loads(resp)
 	except:
-		raise client.FailedRequest(resp)
+		raise FailedRequest(resp)
 
 def http_request(method, *args, **kwargs):
 	print "Called"
