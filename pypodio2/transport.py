@@ -1,5 +1,8 @@
 from httplib2 import Http
 from urllib import urlencode
+
+from encode import multipart_encode
+
 try:
     import json
 except ImportError:
@@ -120,8 +123,13 @@ class HttpTransport(object):
             {'content-type':'application/x-www-form-urlencoded'})
             body = self._generate_body()
         elif('type' in kwargs):
-            body = kwargs['body']
-            self.headers.update({'content-type': kwargs['type']})
+            if kwargs['type'] == 'multipart/form-data':
+                body, headers = multipart_encode(kwargs['body'])
+                body = "".join(body)
+                self.headers.update(headers)
+            else:
+                body = kwargs['body']
+                self.headers.update({'content-type': kwargs['type']})
         else:
             body = self._generate_body() #hack
 
