@@ -41,7 +41,6 @@ class OAuthAuthorization(object):
     def __call__(self):
         return self.token
 
-
 class UserAgentHeaders(object):
     def __init__(self, base_headers_factory, user_agent):
         self.base_headers_factory = base_headers_factory
@@ -112,7 +111,7 @@ class HttpTransport(object):
 
         self._attribute_stack = []
         handler = kwargs.get('handler', _handle_response)
-        handler(response, data)
+        return handler(response, data)
 
     def _generate_params(self, params):
         body = self._params_template % urlencode(params)
