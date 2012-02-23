@@ -40,6 +40,24 @@ class OAuthAuthorization(object):
 
     def __call__(self):
         return self.token
+        
+class OAuthAppAuthorization(object):
+    def __init__(self, app_id, app_token, key, secret, domain):
+        body = {'grant_type':'app',
+                'client_id':key,
+                'client_secret':secret,
+                'app_id' : app_id,
+                'app_token' : app_token}
+        h = Http()
+        headers = {'content-type':'application/x-www-form-urlencoded'}
+        response, data = h.request(domain + "/oauth/token", "POST",
+                                  urlencode(body), headers=headers)
+        if response['status'] == '200':
+             self.token = OAuthToken(_handle_response(response, data)).to_headers()
+
+    def __call__(self):
+        return self.token
+
 
 class UserAgentHeaders(object):
     def __init__(self, base_headers_factory, user_agent):
