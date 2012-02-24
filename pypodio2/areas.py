@@ -304,6 +304,13 @@ class Files(Area):
         '''Returns raw file as string. Pass to a file object'''
         raw_handler = lambda resp, data: data
         return self.transport.GET(url='/file/%d/raw' % file_id, handler=raw_handler)
+        
+    def attach(self, file_id, ref_type, ref_id):
+        attributes = {
+            'ref_type' : ref_type,
+            'ref_id' : ref_id
+        }
+        return self.transport.POST(url='/file/%s/attach' % (file_id,), body=json.dumps(attributes), type='application/json')
 
     def create(self, filename, filedata):
         '''Create a file from raw data'''
