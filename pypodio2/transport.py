@@ -52,7 +52,7 @@ class OAuthAppAuthorization(object):
                 'client_secret':secret,
                 'app_id' : app_id,
                 'app_token' : app_token}
-        h = Http()
+        h = Http(disable_ssl_certificate_validation=True)
         headers = {'content-type':'application/x-www-form-urlencoded'}
         response, data = h.request(domain + "/oauth/token", "POST",
                                   urlencode(body), headers=headers)
