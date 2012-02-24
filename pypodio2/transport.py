@@ -1,5 +1,8 @@
 from httplib2 import Http
 from urllib import urlencode
+
+from encode import multipart_encode
+
 try:
     import json
 except ImportError:
@@ -36,10 +39,28 @@ class OAuthAuthorization(object):
         headers = {'content-type':'application/x-www-form-urlencoded'}
         response, data = h.request(domain + "/oauth/token", "POST",
                                    urlencode(body), headers=headers)
-        self.token = OAuthToken(_handle_response(response, data)).to_headers()
+        self.token = OAuthToken(_handle_response(response, data))
 
     def __call__(self):
-        return self.token
+        return self.token.to_headers()
+        
+class OAuthAppAuthorization(object):
+    
+    def __init__(self, app_id, app_token, key, secret, domain):
+        body = {'grant_type':'app',
+                'client_id':key,
+                'client_secret':secret,
+                'app_id' : app_id,
+                'app_token' : app_token}
+        h = Http(disable_ssl_certificate_validation=True)
+        headers = {'content-type':'application/x-www-form-urlencoded'}
+        response, data = h.request(domain + "/oauth/token", "POST",
+                                  urlencode(body), headers=headers)
+        if response['status'] == '200':
+             self.token = OAuthToken(_handle_response(response, data))
+
+    def __call__(self):
+        return self.token.to_headers()
 
 
 class UserAgentHeaders(object):
@@ -75,10 +96,9 @@ class TransportException(Exception):
 
 
 class HttpTransport(object):
-
     def __init__(self, url, headers_factory):
         self._api_url = url
-        self.headers = headers_factory()
+        self._headers_factory = headers_factory
         self._supported_methods = ("GET", "POST", "PUT", "HEAD", "DELETE",)
         self._attribute_stack = []
         self._method = "GET"
@@ -92,6 +112,8 @@ class HttpTransport(object):
     def __call__(self, *args, **kwargs):
         self._attribute_stack += [str(a) for a in args]
         self._params = kwargs
+        
+        headers = self._headers_factory()
 
         if 'url' not in kwargs:
             url = self.get_url()
@@ -99,20 +121,24 @@ class HttpTransport(object):
             url = self.get_url(kwargs['url'])
 
         if self._method == "POST" and 'type' not in kwargs:
-            self.headers.update(
+            headers.update(
             {'content-type':'application/x-www-form-urlencoded'})
             body = self._generate_body()
         elif('type' in kwargs):
-            body = kwargs['body']
-            self.headers.update({'content-type': kwargs['type']})
+            if kwargs['type'] == 'multipart/form-data':
+                body, new_headers = multipart_encode(kwargs['body']) 
+                body = "".join(body)
+                headers.update(new_headers)
+            else:
+                body = kwargs['body']
+                headers.update({'content-type': kwargs['type']})
         else:
             body = self._generate_body() #hack
-
-        response, data = self._http.request(url, self._method, body=body, headers=self.headers)
+        response, data = self._http.request(url, self._method, body=body, headers=headers)
 
         self._attribute_stack = []
         handler = kwargs.get('handler', _handle_response)
-        handler(response, data)
+        return handler(response, data)
 
     def _generate_params(self, params):
         body = self._params_template % urlencode(params)
@@ -129,11 +155,15 @@ class HttpTransport(object):
 
             return self._generate_params(internal_params)[1:]
 
-    def _clear_headers(self):
+    def _clear_content_type(self):
         '''Clear content-type'''
         if 'content-type' in self._headers:
             del self._headers['content-type']
 
+    def _clear_headers(self):
+        '''Clear all headers'''
+        self._headers = {}
+        
     def get_url(self, url=None):
         if url is None:
             url = self._url_template % {
@@ -174,7 +204,7 @@ class HttpTransport(object):
 
 def _handle_response(response, data):
     if not data:
-        data = {}
+        data = '{}'
     if response.status >= 400:
         raise TransportException(response, data)
     return json.loads(data)
