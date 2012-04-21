@@ -63,6 +63,13 @@ class Item(Area):
         return self.transport.POST(url='/item/app/%d/' % app_id, body=attributes,
                                    type='application/json')
 
+    def update(self, item_id, attributes):
+        if type(attributes) != dict:
+            return ApiErrorException('Must be of type dict')
+        attributes = json.dumps(attributes)
+        return self.transport.PUT(url='/item/%d' % item_id, body=attributes,
+                                   type='application/json')
+
     def delete(self, item_id):
         return self.transport.DELETE(url='/item/%d' % item_id, handler=lambda x, y: None)
 
