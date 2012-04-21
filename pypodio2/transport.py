@@ -120,7 +120,7 @@ class HttpTransport(object):
         else:
             url = self.get_url(kwargs['url'])
 
-        if self._method == "POST" and 'type' not in kwargs:
+        if (self._method == "POST" or self._method == "PUT") and 'type' not in kwargs:
             headers.update(
             {'content-type':'application/x-www-form-urlencoded'})
             body = self._generate_body()
@@ -183,7 +183,7 @@ class HttpTransport(object):
             if 'handler' in internal_params:
                 del internal_params['handler']
 
-            if self._method == 'POST':
+            if self._method == 'POST' or self._method == "PUT":
                 if "GET" not in internal_params:
                     return url
                 internal_params = internal_params['GET']
