@@ -247,7 +247,7 @@ class Hook(Area):
 
     def create(self, hookable_type, hookable_id, attributes):
         attributes = json.dumps(attributes)
-        return self.transport.POST(url='/hook/%r/%r/' % (hookable_type, hookable_id),
+        return self.transport.POST(url='/hook/%s/%r/' % (hookable_type, hookable_id),
                                    body=attributes, type='application/json')
 
     def verify(self, hook_id):
@@ -261,7 +261,7 @@ class Hook(Area):
         return self.transport.DELETE (url='/hook/%r' % hook_id)
 
     def find_all_for(self, hookable_type, hookable_id):
-        return self.transport.GET(url='/hook/%r/%r/' % (hookable_type, hookable_id))
+        return self.transport.GET(url='/hook/%s/%r/' % (hookable_type, hookable_id))
 
 
 class Connection(Area):
