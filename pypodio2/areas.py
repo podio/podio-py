@@ -176,6 +176,14 @@ class User(Area):
     def current(self):
         return self.transport.get(url='/user/')
 
+class Org(Area):
+
+    def __init__(self, *args, **kwargs):
+        super(Org, self).__init__(*args, **kwargs)
+
+    def get_all(self):
+        return self.transport.get(url='/org/')
+
 
 class Status(Area):
 
