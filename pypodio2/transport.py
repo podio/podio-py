@@ -122,8 +122,9 @@ class HttpTransport(object):
 
         if (self._method == "POST" or self._method == "PUT") and 'type' not in kwargs:
             headers.update(
-            {'content-type':'application/x-www-form-urlencoded'})
-            body = self._generate_body()
+            {'content-type':'application/json'})
+            # Not sure if this will always work, but for validate/verfiy nothing else was working:
+            body = json.dumps(kwargs)
         elif('type' in kwargs):
             if kwargs['type'] == 'multipart/form-data':
                 body, new_headers = multipart_encode(kwargs['body']) 
