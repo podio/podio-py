@@ -63,11 +63,14 @@ class Item(Area):
         return self.transport.POST(url='/item/app/%d/' % app_id, body=attributes,
                                    type='application/json')
 
-    def update(self, item_id, attributes):
+    def update(self, item_id, attributes, silent=False):
+      """Updates the item using the supplied attributes. If 'silent' is true, Podio will send 
+      no notifications to subscribed users and not post updates to the stream. 
+      Important: webhooks will still be called, though."""
         if type(attributes) != dict:
             return ApiErrorException('Must be of type dict')
         attributes = json.dumps(attributes)
-        return self.transport.PUT(url='/item/%d' % item_id, body=attributes,
+        return self.transport.PUT(url='/item/%d%s' % (item_id, "?silent=true" if silent else ""), body=attributes,
                                    type='application/json')
 
     def delete(self, item_id):
@@ -88,7 +91,7 @@ class Application(Area):
           Returns:
             Python dict of JSON response
         '''
-        return self.transport.POST(url='/app/%r/activate' % app_id)
+        return self.transport.POST(url='/app/%s/activate' % app_id)
 
     def create(self, attributes):
         if type(attributes) != dict:
@@ -105,7 +108,7 @@ class Application(Area):
           Returns:
             Python dict of JSON response
         '''
-        return self.transport.POST(url='/app/%r/deactivate' % app_id)
+        return self.transport.POST(url='/app/%s/deactivate' % app_id)
 
     def delete(self, app_id):
         '''
@@ -114,7 +117,7 @@ class Application(Area):
             Arguments:
               app_id: Application ID as string or int
         '''
-        return self.transport.DELETE(url='/app/%r' % app_id)
+        return self.transport.DELETE(url='/app/%s' % app_id)
 
     def find(self, app_id):
         '''
@@ -125,10 +128,10 @@ class Application(Area):
           Returns:
             Python dict of JSON response
         '''
-        return self.transport.GET(url='/app/%r' % app_id)
+        return self.transport.GET(url='/app/%s' % app_id)
 
     def get_items(self, app_id, **kwargs):
-        return self.transport.GET(url='/item/app/%r/' % app_id, **kwargs)
+        return self.transport.GET(url='/item/app/%s/' % app_id, **kwargs)
 
     def list_in_space(self, space_id):
         '''
@@ -137,7 +140,7 @@ class Application(Area):
           Arguemtns:
             space_id: Space ID as a string
         '''
-        return self.transport.GET(url='/app/space/%r/' % space_id)
+        return self.transport.GET(url='/app/space/%s/' % space_id)
 
 
 class Task(Area):
@@ -157,7 +160,7 @@ class Task(Area):
         Arguments:
         task_id: Task ID as string or int
         '''
-        return self.transport.DELETE(url='/task/%r' % task_id)
+        return self.transport.DELETE(url='/task/%s' % task_id)
 
     def complete(self, task_id):
         '''
@@ -165,7 +168,7 @@ class Task(Area):
         Arguments:
             task_id: Task ID as string or int
         '''
-        return self.transport.POST(url='/task/%r/complete' % task_id)
+        return self.transport.POST(url='/task/%s/complete' % task_id)
 
 
 class User(Area):
@@ -176,6 +179,14 @@ class User(Area):
     def current(self):
         return self.transport.get(url='/user/')
 
+class Org(Area):
+
+    def __init__(self, *args, **kwargs):
+        super(Org, self).__init__(*args, **kwargs)
+
+    def get_all(self):
+        return self.transport.get(url='/org/')
+
 
 class Status(Area):
 
@@ -183,11 +194,11 @@ class Status(Area):
         super(Status, self).__init__(*args, **kwargs)
 
     def find(self, status_id):
-        return self.transport.GET(url='/status/%r' % status_id)
+        return self.transport.GET(url='/status/%s' % status_id)
 
     def create(self, space_id, attributes):
         attributes = json.dumps(attributes)
-        return self.transport.POST(url='/status/space/%r/' % space_id,
+        return self.transport.POST(url='/status/space/%s/' % space_id,
                                    body=attributes, type='application/json')
 
 
@@ -197,7 +208,7 @@ class Space(Area):
         super(Space, self).__init__(*args, **kwargs)
 
     def find(self, space_id):
-        return self.transport.GET(url='/space/%r' % id)
+        return self.transport.GET(url='/space/%s' % id)
 
     def find_by_url(self, space_url, id_only=True):
         '''
@@ -223,7 +234,7 @@ class Space(Area):
           returns:
             Dict containing details of spaces
         '''
-        return self.transport.GET(url='/org/%r/space/' % org_id)
+        return self.transport.GET(url='/org/%s/space/' % org_id)
 
     def create(self, attributes):
         '''
@@ -247,21 +258,21 @@ class Hook(Area):
 
     def create(self, hookable_type, hookable_id, attributes):
         attributes = json.dumps(attributes)
-        return self.transport.POST(url='/hook/%r/%r/' % (hookable_type, hookable_id),
+        return self.transport.POST(url='/hook/%s/%s/' % (hookable_type, hookable_id),
                                    body=attributes, type='application/json')
 
     def verify(self, hook_id):
-        return self.transport.POST(url='/hook/%r/verify/request' % hook_id)
+        return self.transport.POST(url='/hook/%s/verify/request' % hook_id)
 
     def validate(self, hook_id, code):
-        return self.transport.POST(url='/hook/%r/verify/validate' % hook_id,
+        return self.transport.POST(url='/hook/%s/verify/validate' % hook_id,
                                    code=code)
 
     def delete(self, hook_id):
-        return self.transport.DELETE (url='/hook/%r' % hook_id)
+        return self.transport.DELETE (url='/hook/%s' % hook_id)
 
     def find_all_for(self, hookable_type, hookable_id):
-        return self.transport.GET(url='/hook/%r/%r/' % (hookable_type, hookable_id))
+        return self.transport.GET(url='/hook/%s/%s/' % (hookable_type, hookable_id))
 
 
 class Connection(Area):
@@ -275,13 +286,13 @@ class Connection(Area):
                                    type='application/json')
 
     def find(self, conn_id):
-        return self.transport.GET(url='/connection/%r')
+        return self.transport.GET(url='/connection/%s')
 
     def delete(self, conn_id):
-        return self.transport.DELETE(url='/connection/%r')
+        return self.transport.DELETE(url='/connection/%s')
 
     def reload(self, conn_id):
-        return self.transport.POST(url='/connection/%r/load')
+        return self.transport.POST(url='/connection/%s/load')
 
 
 class Notification(Area):
@@ -290,19 +301,19 @@ class Notification(Area):
         super(Notification, self).__init__(*args, **kwargs)
 
     def find(self, notification_id):
-        return self.transport.GET(url='/notification/%r' % notification_id)
+        return self.transport.GET(url='/notification/%s' % notification_id)
 
     def mark_as_viewed(self, notification_id):
-        return self.transport.POST(url='/notification/%r/viewed' % notification_id)
+        return self.transport.POST(url='/notification/%s/viewed' % notification_id)
 
     def mark_all_as_viewed(self):
         return self.transport.POST(url='/notification/viewed')
 
     def star(self, notification_id):
-        return self.transport.POST(url='/notification/%r/star' % notification_id)
+        return self.transport.POST(url='/notification/%s/star' % notification_id)
 
     def unstar(self, notification_id):
-        return self.transport.POST(url='/notification/%r/star' % notification_id)
+        return self.transport.POST(url='/notification/%s/star' % notification_id)
 
 
 class Files(Area):
