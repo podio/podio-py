@@ -64,9 +64,9 @@ class Item(Area):
                                    type='application/json')
 
     def update(self, item_id, attributes, silent=False):
-      """Updates the item using the supplied attributes. If 'silent' is true, Podio will send 
-      no notifications to subscribed users and not post updates to the stream. 
-      Important: webhooks will still be called, though."""
+        """Updates the item using the supplied attributes. If 'silent' is true, Podio will send
+        no notifications to subscribed users and not post updates to the stream.
+        Important: webhooks ll still be called, though."""
         if type(attributes) != dict:
             return ApiErrorException('Must be of type dict')
         attributes = json.dumps(attributes)
