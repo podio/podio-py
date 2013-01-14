@@ -250,6 +250,69 @@ class Space(Area):
         return self.transport.POST(url='/space/', body=attributes,
                                    type='application/json')
 
+class Stream(Area):
+    """
+    The stream API will supply the different streams. Currently
+    supported is the global stream, the organization stream and the
+    space stream.
+
+    For details, see: https://developers.podio.com/doc/stream/
+    """
+    def find_all_by_app_id(self, app_id):
+        """
+        Returns the stream for the given app. This includes items from
+        the app and tasks on the app.
+
+        For details, see: https://developers.podio.com/doc/stream/get-app-stream-264673
+        """
+        return self.transport.GET(url='/stream/app/%s/' % app_id)
+
+    def find_all(self):
+        """
+        Returns the global stream. The types of objects in the stream
+        can be either "item", "status", "task", "action" or
+        "file". The data part of the result depends on the type of
+        object and is specified on this page:
+
+        https://developers.podio.com/doc/stream/get-global-stream-80012
+        """
+        return self.transport.GET(url='/stream/')
+
+    def find_all_by_org_id(self, org_id):
+        """
+        Returns the activity stream for the given organization.
+
+        For details, see: https://developers.podio.com/doc/stream/get-organization-stream-80038
+        """
+        return self.transport.GET(url='/stream/org/%s/' % org_id)
+
+    def find_all_personal(self):
+        """
+        Returns the personal stream from personal spaces and sub-orgs.
+
+        For details, see: https://developers.podio.com/doc/stream/get-personal-stream-1656647
+        """
+        return self.transport.GET(url='/stream/personal/')
+
+    def find_all_by_space_id(self, space_id):
+        """
+        Returns the activity stream for the space.
+
+        For details, see: https://developers.podio.com/doc/stream/get-space-stream-80039
+        """
+        return self.transport.GET(url='/stream/space/%s/' % space_id)
+
+    def find_by_ref(self, ref_type, ref_id):
+        """
+        Returns an object of type "item", "status" or "task" as a
+        stream object. This is useful when a new status has been
+        posted and should be rendered directly in the stream without
+        reloading the entire stream.
+
+        For details, see: https://developers.podio.com/doc/stream/get-stream-object-80054
+        """
+        return self.transport.GET(url='/stream/%s/%s' % (ref_type, ref_id))
+
 
 class Hook(Area):
 
