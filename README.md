@@ -41,6 +41,16 @@ a keyword argument to a transport function call. For example:
     result = c.Items.find(11007, basic=True, handler=x)
     ($result, $data) #Returned info
 
+Tests
+-----
+
+To run tests for the API wrapper, you need two additional dependencies:
+
+* mock
+* nose
+
+With those installed, run `nosetests` from the repository's root directory.
+
 
 Meta
 ----
