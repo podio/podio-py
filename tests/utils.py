@@ -7,7 +7,7 @@ except ImportError:
     import simplejson as json
 from uuid import uuid4
 
-from mock import MagicMock, Mock
+from mock import Mock
 from nose.tools import eq_
 
 import pypodio2.client
@@ -65,8 +65,10 @@ def check_client_method():
     client, http = get_client_and_http()
     returned_object = {'uuid': uuid4().hex}
 
+    response = Mock()
+    response.status = 200
     http.request = Mock(return_value=(
-            MagicMock(return_value=200), json.dumps(returned_object)))
+            response, json.dumps(returned_object)))
 
     def check_assertions(actual_returned,
                          http_method,
