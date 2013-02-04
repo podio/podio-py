@@ -16,6 +16,10 @@ stable. Install by cloning from the GitHub repo:
     $ git clone git://github.com/podio/podio-py.git
     $ cp -r podio-py/pypodio2 path/to/destination
 
+Alternatively, install via `pip`:
+    
+    $ pip install -e git+git://github.com/podio/podio-py.git#egg=podio-py
+
 
 Example
 -------
@@ -29,7 +33,7 @@ Example
         username,
         password,    
     )
-    print c.Items.get_item(22342)
+    print c.Items.find(22342)
 
 Notes
 ------
