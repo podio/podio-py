@@ -130,6 +130,17 @@ class Application(Area):
         '''
         return self.transport.GET(url='/app/%s' % app_id)
 
+    def dependencies(self, app_id):
+        '''
+        Finds application dependencies for app with id app_id.
+
+          Arguments:
+            app_id: Application ID as string or int
+          Returns:
+            Python dict of JSON response with the apps that the given app depends on.
+        '''
+        return self.transport.GET(url='/app/%s/dependencies/' % app_id)
+
     def get_items(self, app_id, **kwargs):
         return self.transport.GET(url='/item/app/%s/' % app_id, **kwargs)
 
