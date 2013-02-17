@@ -99,6 +99,21 @@ class Application(Area):
         attributes = json.dumps(attributes)
         return self.transport.POST(url='/app/', body=attributes, type='application/json')
 
+    def add_field(self, app_id, attributes):
+        '''
+        Adds a new field to app with app_id
+          
+          Arguments:
+            app_id: Application ID as string or int
+            attributes: Refer to API. Pass in argument as dictionary
+          Returns:
+            Python dict of JSON response
+        '''
+        if type(attributes) != dict:
+            return ApiErrorException('Must be of type dict')
+        attributes = json.dumps(attributes)
+        return self.transport.POST(url='/app/%s/field/' % app_id, body=attributes, type='application/json')
+
     def deactivate(self, app_id):
         '''
         Deactivates the application with app_id
