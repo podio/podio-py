@@ -99,6 +99,21 @@ class Application(Area):
         attributes = json.dumps(attributes)
         return self.transport.POST(url='/app/', body=attributes, type='application/json')
 
+    def add_field(self, app_id, attributes):
+        '''
+        Adds a new field to app with app_id
+          
+          Arguments:
+            app_id: Application ID as string or int
+            attributes: Refer to API. Pass in argument as dictionary
+          Returns:
+            Python dict of JSON response
+        '''
+        if type(attributes) != dict:
+            return ApiErrorException('Must be of type dict')
+        attributes = json.dumps(attributes)
+        return self.transport.POST(url='/app/%s/field/' % app_id, body=attributes, type='application/json')
+
     def deactivate(self, app_id):
         '''
         Deactivates the application with app_id
@@ -129,6 +144,17 @@ class Application(Area):
             Python dict of JSON response
         '''
         return self.transport.GET(url='/app/%s' % app_id)
+
+    def dependencies(self, app_id):
+        '''
+        Finds application dependencies for app with id app_id.
+
+          Arguments:
+            app_id: Application ID as string or int
+          Returns:
+            Python dict of JSON response with the apps that the given app depends on.
+        '''
+        return self.transport.GET(url='/app/%s/dependencies/' % app_id)
 
     def get_items(self, app_id, **kwargs):
         return self.transport.GET(url='/item/app/%s/' % app_id, **kwargs)
