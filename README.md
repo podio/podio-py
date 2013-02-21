@@ -18,7 +18,7 @@ stable. Install by cloning from the GitHub repo:
 
 Alternatively, install via `pip`:
     
-    $ pip install -e git+git://github.com/podio/podio-py.git#egg=podio-py
+    $ pip install -e git+https://github.com/podio/podio-py.git#egg=podio-py
 
 
 Example
