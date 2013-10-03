@@ -196,6 +196,41 @@ class Task(Area):
         '''
         return self.transport.POST(url='/task/%s/complete' % task_id)
 
+    def create(self, attributes, silent=False, hook=True):
+        """
+        https://developers.podio.com/doc/tasks/create-task-22419
+        Creates the task using the supplied attributes. If 'silent' is true,
+        Podio will send no notifications to subscribed users and not post
+        updates to the stream. If 'hook' is false webhooks will not be called.
+        """
+        #if type(attributes) != dict:
+        #    return ApiErrorException('Must be of type dict')
+        attributes = json.dumps(attributes)
+        options = ()
+        if silent: options += ('silent',silent),
+        if not hook: options += ('hook',hook),
+        options = urlencode(options)
+        if options: options = '?'+options
+        return self.transport.POST(url='/task/%s'%options, body=attributes,
+                                   type='application/json')
+
+    def create_for(self, ref_type, ref_id, attributes, silent=False, hook=True):
+        """
+        https://developers.podio.com/doc/tasks/create-task-with-reference-22420
+        If 'silent' is true, Podio will send no notifications and not post
+        updates to the stream. If 'hook' is false webhooks will not be called.
+        """
+        #if type(attributes) != dict:
+        #    return ApiErrorException('Must be of type dict')
+        attributes = json.dumps(attributes)
+        options = ()
+        if silent: options += ('silent',silent),
+        if not hook: options += ('hook',hook),
+        options = urlencode(options)
+        if options: options = '?'+options
+        return self.transport.POST(url='/task/%s/%s/%s'%(ref_type, ref_id, options),
+                                   body=attributes,
+                                   type='application/json')    
 
 class User(Area):
 
