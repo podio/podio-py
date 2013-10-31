@@ -427,6 +427,12 @@ class Notification(Area):
     def find(self, notification_id):
         return self.transport.GET(url='/notification/%s' % notification_id)
 
+    def find_all(self):
+        return self.transport.GET(url='/notification/')
+
+    def get_inbox_new_count(self):
+        return self.transport.GET(url='/notification/inbox/new/count')
+
     def mark_as_viewed(self, notification_id):
         return self.transport.POST(url='/notification/%s/viewed' % notification_id)
 
@@ -437,7 +443,33 @@ class Notification(Area):
         return self.transport.POST(url='/notification/%s/star' % notification_id)
 
     def unstar(self, notification_id):
-        return self.transport.POST(url='/notification/%s/star' % notification_id)
+        return self.transport.DELETE(url='/notification/%s/star' % notification_id)
+
+
+class Conversation(Area):
+
+    def __init__(self, *args, **kwargs):
+        super(Conversation, self).__init__(*args, **kwargs)
+
+    def find_all(self):
+        return self.transport.GET(url='/conversation/')
+
+    def find(self, conversation_id):
+        return self.transport.GET(url='/conversation/%s' % conversation_id)
+
+    def create(self, attributes):
+        attributes = json.dumps(attributes)
+        return self.transport.POST(url='/conversation/', body=attributes,
+                                   type='application/json')
+
+    def star(self, conversation_id):
+        return self.transport.POST(url='/conversation/%s/star' % conversation_id)
+
+    def unstar(self, conversation_id):
+        return self.transport.DELETE(url='/conversation/%s/star' % conversation_id)
+
+    def leave(self, conversation_id):
+        return self.transport.POST(url='/conversation/%s/leave' % conversation_id)
 
 
 class Files(Area):
