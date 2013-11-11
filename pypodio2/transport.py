@@ -1,7 +1,7 @@
 from httplib2 import Http
-from urllib import urlencode
+from urllib.parse import urlencode
 
-from encode import multipart_encode
+from .encode import multipart_encode
 
 try:
     import json
@@ -206,6 +206,8 @@ class HttpTransport(object):
 def _handle_response(response, data):
     if not data:
         data = '{}'
+    else:
+        data = data.decode("utf-8")
     if response.status >= 400:
         raise TransportException(response, data)
     return json.loads(data)
