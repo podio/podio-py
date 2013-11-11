@@ -13,8 +13,8 @@ c = api.OAuthClient(
 )
 
 
-print c.Item.find(22481) #Get https://hoist.podio.com/api/item/22481
-print c.Space.find_by_url("https://remaxtraditions.podio.com/remaxtraditions/") #Find ID
+print(c.Item.find(22481)) #Get https://hoist.podio.com/api/item/22481
+print(c.Space.find_by_url("https://remaxtraditions.podio.com/remaxtraditions/")) #Find ID
 
 items = c.Application.get_items(48294)['items']
 

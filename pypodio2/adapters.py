@@ -12,4 +12,4 @@ def json_response(resp):
 		raise FailedRequest(resp)
 
 def http_request(method, *args, **kwargs):
-	print "Called"
+	print("Called")
