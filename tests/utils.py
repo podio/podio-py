@@ -68,7 +68,7 @@ def check_client_method():
     response = Mock()
     response.status = 200
     http.request = Mock(return_value=(
-            response, json.dumps(returned_object)))
+            response, json.dumps(returned_object).encode("utf-8")))
 
     def check_assertions(actual_returned,
                          http_method,
