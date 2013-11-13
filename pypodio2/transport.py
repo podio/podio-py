@@ -1,5 +1,9 @@
 from httplib2 import Http
-from urllib.parse import urlencode
+
+try:
+   from urllib.parse import urlencode
+except ImportError:
+   from urllib import urlencode
 
 from .encode import multipart_encode
 
