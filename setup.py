@@ -1,4 +1,15 @@
 from setuptools import setup
+import sys
+
+try:
+   from distutils.command.build_py import build_py_2to3 as build_py
+except ImportError:
+   from distutils.command.build_py import build_py
+
+kw = {}
+
+if sys.version_info >= (3,):
+  kw['use_2to3'] = True
 
 setup(
     name="pypodio2",
@@ -10,7 +21,8 @@ setup(
     license="MIT",
     packages=["pypodio2"],
     install_requires=["httplib2"],
-    tests_require=["nose", "mock"],
+    cmdclass = {'build_py': build_py},
+    tests_require=["nose", "mock", "tox"],
     test_suite="nose.collector",
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -20,4 +32,5 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
+    **kw
 )

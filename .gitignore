@@ -2,3 +2,8 @@
 
 untitled
 test.py
+.tox
+build
+dist
+.virtualenv
+*.egg
