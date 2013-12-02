@@ -13,7 +13,7 @@ except ImportError:
 from mock import Mock
 from nose.tools import eq_
 
-from utils import check_client_method, get_client_and_http, URL_BASE
+from tests.utils import check_client_method, get_client_and_http, URL_BASE
 
 
 def test_find():

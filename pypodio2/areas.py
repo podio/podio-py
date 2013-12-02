@@ -2,7 +2,11 @@ try:
     import json
 except ImportError:
     import simplejson as json
-from urllib import urlencode
+
+try:
+   from urllib.parse import urlencode
+except ImportError:
+   from urllib import urlencode
 
 
 class Area(object):
