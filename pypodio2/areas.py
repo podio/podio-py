@@ -39,11 +39,12 @@ class Item(Area):
             return self.transport.GET(url='/item/%d/basic' % item_id)
         return self.transport.GET(kwargs, url='/item/%d' % item_id)
 
-    def filter(self, app_id, attributes):
+    def filter(self, app_id, attributes, **kwargs):
         if type(attributes) != dict:
             return ApiErrorException('Must be of type dict')
         attributes = json.dumps(attributes)
-        return self.transport.POST(url="/item/app/%d/filter/" % app_id, body=attributes, type="application/json")
+        return self.transport.POST(url="/item/app/%d/filter/" % app_id, body=attributes,
+                                   type="application/json", **kwargs)
 
     def next(self, item_id, **kwargs):
         return self.transport.GET(url='/item/%d/next' % item_id)
