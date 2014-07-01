@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 """
 Unit tests for pypodio2.areas.Stream (via pypodio2.client.Client). Works
 by mocking httplib2, and making assertions about how pypodio2 calls
