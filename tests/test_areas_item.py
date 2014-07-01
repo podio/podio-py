@@ -41,26 +41,6 @@ def test_filters():
                      expected_headers={'content-type': 'application/json'})
 
 
-def test_next():
-    item_id = 8071
-
-    client, check_assertions = check_client_method()
-    result = client.Item.next(item_id)
-    check_assertions(result,
-                     'GET',
-                     '/item/%s/next' % item_id)
-
-
-def test_prev():
-    item_id = 4
-
-    client, check_assertions = check_client_method()
-    result = client.Item.prev(item_id)
-    check_assertions(result,
-                     'GET',
-                     '/item/%s/previous' % item_id)
-
-
 def test_find_by_external_id():
     app_id = 13
     external_id = 37

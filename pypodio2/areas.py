@@ -46,12 +46,6 @@ class Item(Area):
         return self.transport.POST(url="/item/app/%d/filter/" % app_id, body=attributes,
                                    type="application/json", **kwargs)
 
-    def next(self, item_id, **kwargs):
-        return self.transport.GET(url='/item/%d/next' % item_id)
-
-    def prev(self, item_id, **kwargs):
-        return self.transport.GET(url='/item/%d/previous' % item_id)
-
     def find_all_by_external_id(self, app_id, external_id):
         return self.transport.GET(url='/item/app/%d/v2/?external_id=%r' % (app_id, external_id))
 
@@ -90,7 +84,7 @@ class Application(Area):
     def activate(self, app_id):
         '''
         Activates the application with app_id
-          
+
           Arguments:
             app_id: Application ID as string or int
           Returns:
@@ -107,7 +101,7 @@ class Application(Area):
     def add_field(self, app_id, attributes):
         '''
         Adds a new field to app with app_id
-          
+
           Arguments:
             app_id: Application ID as string or int
             attributes: Refer to API. Pass in argument as dictionary
@@ -122,7 +116,7 @@ class Application(Area):
     def deactivate(self, app_id):
         '''
         Deactivates the application with app_id
-          
+
           Arguments:
             app_id: Application ID as string or int
           Returns:
@@ -133,7 +127,7 @@ class Application(Area):
     def delete(self, app_id):
         '''
         Deletes the app with the given id.
-        
+
             Arguments:
               app_id: Application ID as string or int
         '''
@@ -235,7 +229,7 @@ class Task(Area):
         if options: options = '?'+options
         return self.transport.POST(url='/task/%s/%s/%s'%(ref_type, ref_id, options),
                                    body=attributes,
-                                   type='application/json')    
+                                   type='application/json')
 
 class User(Area):
 
@@ -282,7 +276,7 @@ class Space(Area):
 
           Arguments:
             space_url: URL of the Space
-          
+
           Returns:
             space_id: Space url as string
         '''
@@ -294,7 +288,7 @@ class Space(Area):
     def find_all_for_org(self, org_id):
         '''
         Find all of the spaces in a given org.
-          
+
           Arguments:
             org_id: Orginization ID as string
           returns:
@@ -489,7 +483,7 @@ class Files(Area):
         '''Returns raw file as string. Pass to a file object'''
         raw_handler = lambda resp, data: data
         return self.transport.GET(url='/file/%d/raw' % file_id, handler=raw_handler)
-        
+
     def attach(self, file_id, ref_type, ref_id):
         attributes = {
             'ref_type' : ref_type,
@@ -503,6 +497,6 @@ class Files(Area):
             'filename' : filename,
             'source' : filedata
         }
-        
+
         return self.transport.POST(url='/file/v2/', body=attributes,
                                    type='multipart/form-data')
