@@ -12,21 +12,29 @@ except ImportError:
 
 class Area(object):
     """Represents a Podio Area"""
-
-    def __init__(self, transport, *args, **kwargs):
+    def __init__(self, transport):
         self.transport = transport
 
-    def sanitize_id(self, item_id):
-        if type(item_id) == int:
+    @staticmethod
+    def sanitize_id(item_id):
+        if isinstance(item_id, int):
             return str(item_id)
         return item_id
 
+    @staticmethod
+    def get_options(silent=False, hook=True):
+        options_ = {}
+        if silent:
+            options_['silent'] = silent
+        if not hook:
+            options_['hook'] = hook
+        if options_:
+            return '?' + urlencode(options_)
+        else:
+            return ''
+
 
 class Item(Area):
-
-    def __init__(self, *args, **kwargs):
-        super(Item, self).__init__(*args, **kwargs)
-
     def find(self, item_id, basic=False, **kwargs):
         """
         Get item
@@ -55,14 +63,17 @@ class Item(Area):
         return self.transport.GET(url='/item/%d/revision/%d/%d' % (item_id, revision_from_id,
                                                                    revision_to_id))
 
-    def create(self, app_id, attributes):
+    def create(self, app_id, attributes, silent=False, hook=True):
         if not isinstance(attributes, dict):
             raise TypeError('Must be of type dict')
         attributes = json.dumps(attributes)
-        return self.transport.POST(url='/item/app/%d/' % app_id, body=attributes,
-                                   type='application/json')
+        return self.transport.POST(body=attributes,
+                                   type='application/json',
+                                   url='/item/app/%d/%s' % (app_id,
+                                                            self.get_options(silent=silent,
+                                                                             hook=hook)))
 
-    def update(self, item_id, attributes, silent=False):
+    def update(self, item_id, attributes, silent=False, hook=True):
         """
         Updates the item using the supplied attributes. If 'silent' is true, Podio will send
         no notifications to subscribed users and not post updates to the stream.
@@ -72,19 +83,19 @@ class Item(Area):
         if not isinstance(attributes, dict):
             raise TypeError('Must be of type dict')
         attributes = json.dumps(attributes)
-        return self.transport.PUT(url='/item/%d%s' % (item_id, "?silent=true" if silent else ""),
-                                  body=attributes,
-                                  type='application/json')
+        return self.transport.PUT(body=attributes,
+                                  type='application/json',
+                                  url='/item/%d%s' % (item_id, self.get_options(silent=silent,
+                                                                                hook=hook)))
 
-    def delete(self, item_id):
-        return self.transport.DELETE(url='/item/%d' % item_id, handler=lambda x, y: None)
+    def delete(self, item_id, silent=False, hook=True):
+        return self.transport.DELETE(url='/item/%d%s' % (item_id,
+                                                         self.get_options(silent=silent,
+                                                                          hook=hook)),
+                                     handler=lambda x, y: None)
 
 
 class Application(Area):
-
-    def __init__(self, *args, **kwargs):
-        super(Application, self).__init__(*args, **kwargs)
-
     def activate(self, app_id):
         """
         Activates the application with app_id
@@ -172,10 +183,6 @@ class Application(Area):
 
 
 class Task(Area):
-
-    def __init__(self, *args, **kwargs):
-        super(Task, self).__init__(*args, **kwargs)
-
     def get(self, **kwargs):
         """
         Get tasks endpoint. QueryStrings are kwargs
@@ -208,15 +215,8 @@ class Task(Area):
         #if not isinstance(attributes, dict):
         #    raise TypeError('Must be of type dict')
         attributes = json.dumps(attributes)
-        options = ()
-        if silent:
-            options += ('silent', silent),
-        if not hook:
-            options += ('hook', hook),
-        options = urlencode(options)
-        if options:
-            options = '?' + options
-        return self.transport.POST(url='/task/%s' % options, body=attributes,
+        return self.transport.POST(url='/task/%s' % self.get_options(silent=silent, hook=hook),
+                                   body=attributes,
                                    type='application/json')
 
     def create_for(self, ref_type, ref_id, attributes, silent=False, hook=True):
@@ -228,42 +228,24 @@ class Task(Area):
         #if not isinstance(attributes, dict):
         #    raise TypeError('Must be of type dict')
         attributes = json.dumps(attributes)
-        options = ()
-        if silent:
-            options += ('silent', silent),
-        if not hook:
-            options += ('hook', hook),
-        options = urlencode(options)
-        if options:
-            options = '?'+options
-        return self.transport.POST(url='/task/%s/%s/%s' % (ref_type, ref_id, options),
-                                   body=attributes,
-                                   type='application/json')
+        return self.transport.POST(body=attributes,
+                                   type='application/json',
+                                   url='/task/%s/%s/%s' % (ref_type, ref_id,
+                                                           self.get_options(silent=silent,
+                                                                            hook=hook)))
 
 
 class User(Area):
-
-    def __init__(self, *args, **kwargs):
-        super(User, self).__init__(*args, **kwargs)
-
     def current(self):
         return self.transport.get(url='/user/')
 
 
 class Org(Area):
-
-    def __init__(self, *args, **kwargs):
-        super(Org, self).__init__(*args, **kwargs)
-
     def get_all(self):
         return self.transport.get(url='/org/')
 
 
 class Status(Area):
-
-    def __init__(self, *args, **kwargs):
-        super(Status, self).__init__(*args, **kwargs)
-
     def find(self, status_id):
         return self.transport.GET(url='/status/%s' % status_id)
 
@@ -274,10 +256,6 @@ class Status(Area):
 
 
 class Space(Area):
-
-    def __init__(self, *args, **kwargs):
-        super(Space, self).__init__(*args, **kwargs)
-
     def find(self, space_id):
         return self.transport.GET(url='/space/%s' % space_id)
 
@@ -291,7 +269,7 @@ class Space(Area):
           Returns:
             space_id: Space url as string
         """
-        resp = self.transport.GET(url='/space/url?%s' % urlencode(dict(url=space_url)))
+        resp = self.transport.GET(url='/space/url?%s' % urlencode({'url': space_url}))
         if id_only:
             return resp['space_id']
         return resp
@@ -318,8 +296,7 @@ class Space(Area):
         if not isinstance(attributes, dict):
             raise TypeError('Dictionary of values expected')
         attributes = json.dumps(attributes)
-        return self.transport.POST(url='/space/', body=attributes,
-                                   type='application/json')
+        return self.transport.POST(url='/space/', body=attributes, type='application/json')
 
 
 class Stream(Area):
@@ -387,10 +364,6 @@ class Stream(Area):
 
 
 class Hook(Area):
-
-    def __init__(self, *args, **kwargs):
-        super(Hook, self).__init__(*args, **kwargs)
-
     def create(self, hookable_type, hookable_id, attributes):
         attributes = json.dumps(attributes)
         return self.transport.POST(url='/hook/%s/%s/' % (hookable_type, hookable_id),
@@ -400,8 +373,7 @@ class Hook(Area):
         return self.transport.POST(url='/hook/%s/verify/request' % hook_id)
 
     def validate(self, hook_id, code):
-        return self.transport.POST(url='/hook/%s/verify/validate' % hook_id,
-                                   code=code)
+        return self.transport.POST(url='/hook/%s/verify/validate' % hook_id, code=code)
 
     def delete(self, hook_id):
         return self.transport.DELETE(url='/hook/%s' % hook_id)
@@ -411,14 +383,9 @@ class Hook(Area):
 
 
 class Connection(Area):
-
-    def __init__(self, *args, **kwargs):
-        super(Connection, self).__init__(*args, **kwargs)
-
     def create(self, attributes):
         attributes = json.dumps(attributes)
-        return self.transport.POST(url='/connection/', body=attributes,
-                                   type='application/json')
+        return self.transport.POST(url='/connection/', body=attributes, type='application/json')
 
     def find(self, conn_id):
         return self.transport.GET(url='/connection/%s' % conn_id)
@@ -431,10 +398,6 @@ class Connection(Area):
 
 
 class Notification(Area):
-
-    def __init__(self, *args, **kwargs):
-        super(Notification, self).__init__(*args, **kwargs)
-
     def find(self, notification_id):
         return self.transport.GET(url='/notification/%s' % notification_id)
 
@@ -458,10 +421,6 @@ class Notification(Area):
 
 
 class Conversation(Area):
-
-    def __init__(self, *args, **kwargs):
-        super(Conversation, self).__init__(*args, **kwargs)
-
     def find_all(self):
         return self.transport.GET(url='/conversation/')
 
@@ -470,8 +429,7 @@ class Conversation(Area):
 
     def create(self, attributes):
         attributes = json.dumps(attributes)
-        return self.transport.POST(url='/conversation/', body=attributes,
-                                   type='application/json')
+        return self.transport.POST(url='/conversation/', body=attributes, type='application/json')
 
     def star(self, conversation_id):
         return self.transport.POST(url='/conversation/%s/star' % conversation_id)
@@ -484,10 +442,6 @@ class Conversation(Area):
 
 
 class Files(Area):
-
-    def __init__(self, *args, **kwargs):
-        super(Files, self).__init__(*args, **kwargs)
-
     def find(self, file_id):
         pass
 
@@ -501,13 +455,11 @@ class Files(Area):
             'ref_type': ref_type,
             'ref_id': ref_id
         }
-        return self.transport.POST(url='/file/%s/attach' % (file_id,), body=json.dumps(attributes),
+        return self.transport.POST(url='/file/%s/attach' % file_id, body=json.dumps(attributes),
                                    type='application/json')
 
     def create(self, filename, filedata):
         """Create a file from raw data"""
         attributes = {'filename': filename,
                       'source': filedata}
-
-        return self.transport.POST(url='/file/v2/', body=attributes,
-                                   type='multipart/form-data')
+        return self.transport.POST(url='/file/v2/', body=attributes, type='multipart/form-data')
