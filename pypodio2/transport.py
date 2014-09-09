@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 from httplib2 import Http
 
 try:
-   from urllib.parse import urlencode
+    from urllib.parse import urlencode
 except ImportError:
-   from urllib import urlencode
+    from urllib import urlencode
 
 from .encode import multipart_encode
 
@@ -14,54 +15,55 @@ except ImportError:
 
 
 class OAuthToken(object):
-    '''
+    """
     Class used to encapsulate the OAuthToken required to access the
     Podio API.
 
     Do not modify its attributes manually Use the methods in the
     Podio API Connector, get_oauth_token and refresh_oauth_token
-    '''
+    """
     def __init__(self, resp):
         self.expires_in = resp['expires_in']
         self.access_token = resp['access_token']
         self.refresh_token = resp['refresh_token']
 
     def to_headers(self):
-        return {'authorization':"OAuth2 %s" % self.access_token}
+        return {'authorization': "OAuth2 %s" % self.access_token}
 
 
 class OAuthAuthorization(object):
     """Generates headers for Podio OAuth2 Authorization"""
 
     def __init__(self, login, password, key, secret, domain):
-        body = {'grant_type':'password',
-                'client_id':key,
-                'client_secret':secret,
-                'username':login,
-                'password':password}
+        body = {'grant_type': 'password',
+                'client_id': key,
+                'client_secret': secret,
+                'username': login,
+                'password': password}
         h = Http(disable_ssl_certificate_validation=True)
-        headers = {'content-type':'application/x-www-form-urlencoded'}
+        headers = {'content-type': 'application/x-www-form-urlencoded'}
         response, data = h.request(domain + "/oauth/token", "POST",
                                    urlencode(body), headers=headers)
         self.token = OAuthToken(_handle_response(response, data))
 
     def __call__(self):
         return self.token.to_headers()
-        
+
+
 class OAuthAppAuthorization(object):
-    
+
     def __init__(self, app_id, app_token, key, secret, domain):
-        body = {'grant_type':'app',
-                'client_id':key,
-                'client_secret':secret,
-                'app_id' : app_id,
-                'app_token' : app_token}
+        body = {'grant_type': 'app',
+                'client_id': key,
+                'client_secret': secret,
+                'app_id': app_id,
+                'app_token': app_token}
         h = Http(disable_ssl_certificate_validation=True)
-        headers = {'content-type':'application/x-www-form-urlencoded'}
+        headers = {'content-type': 'application/x-www-form-urlencoded'}
         response, data = h.request(domain + "/oauth/token", "POST",
-                                  urlencode(body), headers=headers)
+                                   urlencode(body), headers=headers)
         if response['status'] == '200':
-             self.token = OAuthToken(_handle_response(response, data))
+            self.token = OAuthToken(_handle_response(response, data))
 
     def __call__(self):
         return self.token.to_headers()
@@ -116,7 +118,7 @@ class HttpTransport(object):
     def __call__(self, *args, **kwargs):
         self._attribute_stack += [str(a) for a in args]
         self._params = kwargs
-        
+
         headers = self._headers_factory()
 
         if 'url' not in kwargs:
@@ -125,20 +127,19 @@ class HttpTransport(object):
             url = self.get_url(kwargs['url'])
 
         if (self._method == "POST" or self._method == "PUT") and 'type' not in kwargs:
-            headers.update(
-            {'content-type':'application/json'})
+            headers.update({'content-type': 'application/json'})
             # Not sure if this will always work, but for validate/verfiy nothing else was working:
             body = json.dumps(kwargs)
-        elif('type' in kwargs):
+        elif 'type' in kwargs:
             if kwargs['type'] == 'multipart/form-data':
-                body, new_headers = multipart_encode(kwargs['body']) 
+                body, new_headers = multipart_encode(kwargs['body'])
                 body = "".join(body)
                 headers.update(new_headers)
             else:
                 body = kwargs['body']
                 headers.update({'content-type': kwargs['type']})
         else:
-            body = self._generate_body() #hack
+            body = self._generate_body()  # hack
         response, data = self._http.request(url, self._method, body=body, headers=headers)
 
         self._attribute_stack = []
@@ -161,19 +162,19 @@ class HttpTransport(object):
             return self._generate_params(internal_params)[1:]
 
     def _clear_content_type(self):
-        '''Clear content-type'''
+        """Clear content-type"""
         if 'content-type' in self._headers:
             del self._headers['content-type']
 
     def _clear_headers(self):
-        '''Clear all headers'''
+        """Clear all headers"""
         self._headers = {}
-        
+
     def get_url(self, url=None):
         if url is None:
             url = self._url_template % {
                 "domain": self._api_url,
-                "generated_url" : self._stack_collapser(self._attribute_stack),
+                "generated_url": self._stack_collapser(self._attribute_stack),
             }
         else:
             url = self._url_template % {

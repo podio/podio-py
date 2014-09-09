@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 from . import areas
+
 
 class FailedRequest(Exception):
 

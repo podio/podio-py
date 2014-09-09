@@ -1,4 +1,7 @@
-"""multipart/form-data encoding module
+# -*- coding: utf-8 -*-
+"""
+multipart/form-data encoding module
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Released via https://bitbucket.org/chrisatlee/poster/ under MIT License (Included below)
 
@@ -9,17 +12,25 @@ multipart/form-data is the standard way to upload files over HTTP
 
 Copyright (C) 2011 Chris Atlee
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or substantial
+portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
+OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 __all__ = ['gen_boundary', 'encode_and_quote', 'MultipartParam',
-        'encode_string', 'encode_file_header', 'get_body_size', 'get_headers',
-        'multipart_encode']
+           'encode_string', 'encode_file_header', 'get_body_size', 'get_headers',
+           'multipart_encode']
 
 try:
     import uuid
@@ -33,12 +44,14 @@ except ImportError:
         bits = random.getrandbits(160)
         return sha.new(str(bits)).hexdigest()
 
-import re, os, mimetypes
+import re
+import os
+import mimetypes
 
 try:
-   from urllib.parse import quote_plus
+    from urllib.parse import quote_plus
 except ImportError:
-   from urllib import quote_plus
+    from urllib import quote_plus
 
 try:
     from email.header import Header
@@ -98,7 +111,7 @@ class MultipartParam(object):
     transferred, and the total size.
     """
     def __init__(self, name, value=None, filename=None, filetype=None,
-                        filesize=None, fileobj=None, cb=None):
+                 filesize=None, fileobj=None, cb=None):
         self.name = Header(name).encode()
         self.value = _strify(value)
         if filename is None:
@@ -109,8 +122,8 @@ class MultipartParam(object):
                 self.filename = filename.encode("ascii", "xmlcharrefreplace")
             else:
                 self.filename = str(filename)
-            self.filename = self.filename.encode("string_escape").\
-                    replace('"', '\\"')
+            self.filename = self.filename.encode("string_escape"). \
+                replace('"', '\\"')
         self.filetype = _strify(filetype)
 
         self.filesize = filesize
@@ -157,9 +170,9 @@ class MultipartParam(object):
         """
 
         return cls(paramname, filename=os.path.basename(filename),
-                filetype=mimetypes.guess_type(filename)[0],
-                filesize=os.path.getsize(filename),
-                fileobj=open(filename, "rb"))
+                   filetype=mimetypes.guess_type(filename)[0],
+                   filesize=os.path.getsize(filename),
+                   fileobj=open(filename, "rb"))
 
     @classmethod
     def from_params(cls, params):
@@ -192,7 +205,7 @@ class MultipartParam(object):
                     filetype = None
 
                 retval.append(cls(name=name, filename=filename,
-                    filetype=filetype, fileobj=value))
+                                  filetype=filetype, fileobj=value))
             else:
                 retval.append(cls(name, value))
         return retval
@@ -205,7 +218,7 @@ class MultipartParam(object):
 
         if self.filename:
             disposition = 'form-data; name="%s"; filename="%s"' % (self.name,
-                    self.filename)
+                                                                   self.filename)
         else:
             disposition = 'form-data; name="%s"' % self.name
 
@@ -256,7 +269,7 @@ class MultipartParam(object):
             last_block = ""
             encoded_boundary = "--%s" % encode_and_quote(boundary)
             boundary_exp = re.compile("^%s$" % re.escape(encoded_boundary),
-                    re.M)
+                                      re.M)
             while True:
                 block = self.fileobj.read(blocksize)
                 if not block:
@@ -292,7 +305,7 @@ def encode_string(boundary, name, value):
     return MultipartParam(name, value).encode(boundary)
 
 def encode_file_header(boundary, paramname, filesize, filename=None,
-        filetype=None):
+                       filetype=None):
     """Returns the leading data for a multipart/form-data field that contains
     file data.
 
@@ -312,7 +325,7 @@ def encode_file_header(boundary, paramname, filesize, filename=None,
     """
 
     return MultipartParam(paramname, filesize=filesize, filename=filename,
-            filetype=filetype).encode_hdr(boundary)
+                          filetype=filetype).encode_hdr(boundary)
 
 def get_body_size(params, boundary):
     """Returns the number of bytes that the multipart/form-data encoding
