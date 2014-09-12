@@ -158,7 +158,8 @@ class Application(Area):
         """
         Deletes the app with the given id.
 
-        :param app_id: Application ID as string or int
+        :param app_id: Application ID
+        :type app_id: str or int
         """
         return self.transport.DELETE(url='/app/%s' % app_id)
 
@@ -281,7 +282,8 @@ class Space(Area):
         Returns a space ID given the URL of the space.
 
         :param space_url: URL of the Space
-        :return: space_id: Space url as string
+        :return: space_id: Space url
+        :rtype: str
         """
         resp = self.transport.GET(url='/space/url?%s' % urlencode({'url': space_url}))
         if id_only:
