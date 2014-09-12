@@ -23,6 +23,17 @@ class Area(object):
 
     @staticmethod
     def get_options(silent=False, hook=True):
+        """
+        Generate a query string with the appropriate options.
+
+        :param silent: If set to true, the object will not be bumped up in the stream and
+                       notifications will not be generated.
+        :type silent: bool
+        :param hook: True if hooks should be executed for the change, false otherwise.
+        :type hook: bool
+        :return: The generated query string
+        :rtype: str
+        """
         options_ = {}
         if silent:
             options_['silent'] = silent
@@ -39,10 +50,10 @@ class Item(Area):
         """
         Get item
         
-        Arguments:
-            item_id: Item's id
-        Returns:
-            Dict with item info
+        :param item_id: Item ID
+        :type item_id: int
+        :return: Item info
+        :rtype: dict
         """
         if basic:
             return self.transport.GET(url='/item/%d/basic' % item_id)
@@ -102,10 +113,10 @@ class Application(Area):
         """
         Activates the application with app_id
 
-        Arguments:
-            app_id: Application ID as string or int
-        Return:
-            Python dict of JSON response
+        :param app_id: Application ID
+        :type app_id: str or int
+        :return: Python dict of JSON response
+        :rtype: dict
         """
         return self.transport.POST(url='/app/%s/activate' % app_id)
 
@@ -119,11 +130,12 @@ class Application(Area):
         """
         Adds a new field to app with app_id
 
-          Arguments:
-            app_id: Application ID as string or int
-            attributes: Refer to API. Pass in argument as dictionary
-          Returns:
-            Python dict of JSON response
+        :param app_id: Application ID
+        :type app_id: str or int
+        :param attributes: Refer to API.
+        :type attributes: dict
+        :return: Python dict of JSON response
+        :rtype: dict
         """
         if not isinstance(attributes, dict):
             raise TypeError('Must be of type dict')
@@ -135,10 +147,10 @@ class Application(Area):
         """
         Deactivates the application with app_id
 
-          Arguments:
-            app_id: Application ID as string or int
-          Returns:
-            Python dict of JSON response
+        :param app_id: Application ID
+        :type app_id: str or int
+        :return: Python dict of JSON response
+        :rtype: dict
         """
         return self.transport.POST(url='/app/%s/deactivate' % app_id)
 
@@ -146,8 +158,7 @@ class Application(Area):
         """
         Deletes the app with the given id.
 
-            Arguments:
-              app_id: Application ID as string or int
+        :param app_id: Application ID as string or int
         """
         return self.transport.DELETE(url='/app/%s' % app_id)
 
@@ -155,10 +166,10 @@ class Application(Area):
         """
         Finds application with id app_id.
 
-          Arguments:
-            app_id: Application ID as string or int
-          Returns:
-            Python dict of JSON response
+        :param app_id: Application ID
+        :type app_id: str or int
+        :return: Python dict of JSON response
+        :rtype: dict
         """
         return self.transport.GET(url='/app/%s' % app_id)
 
@@ -166,10 +177,10 @@ class Application(Area):
         """
         Finds application dependencies for app with id app_id.
 
-          Arguments:
-            app_id: Application ID as string or int
-          Returns:
-            Python dict of JSON response with the apps that the given app depends on.
+        :param app_id: Application ID
+        :type app_id: str or int
+        :return: Python dict of JSON response with the apps that the given app depends on.
+        :rtype: dict
         """
         return self.transport.GET(url='/app/%s/dependencies/' % app_id)
 
@@ -180,8 +191,8 @@ class Application(Area):
         """
         Returns a list of all the visible apps in a space.
 
-          Arguemtns:
-            space_id: Space ID as a string
+        :param space_id: Space ID
+        :type space_id: str
         """
         return self.transport.GET(url='/app/space/%s/' % space_id)
 
@@ -196,16 +207,18 @@ class Task(Area):
     def delete(self, task_id):
         """
         Deletes the app with the given id.
-        Arguments:
-        task_id: Task ID as string or int
+        
+        :param task_id: Task ID
+        :type task_id: str or int
         """
         return self.transport.DELETE(url='/task/%s' % task_id)
 
     def complete(self, task_id):
         """
         Mark the given task as completed.
-        Arguments:
-            task_id: Task ID as string or int
+
+        :param task_id: Task ID
+        :type task_id: str or int
         """
         return self.transport.POST(url='/task/%s/complete' % task_id)
 
@@ -267,11 +280,8 @@ class Space(Area):
         """
         Returns a space ID given the URL of the space.
 
-          Arguments:
-            space_url: URL of the Space
-
-          Returns:
-            space_id: Space url as string
+        :param space_url: URL of the Space
+        :return: space_id: Space url as string
         """
         resp = self.transport.GET(url='/space/url?%s' % urlencode({'url': space_url}))
         if id_only:
@@ -282,20 +292,21 @@ class Space(Area):
         """
         Find all of the spaces in a given org.
 
-          Arguments:
-            org_id: Orginization ID as string
-          returns:
-            Dict containing details of spaces
+        :param org_id: Orginization ID
+        :type org_id: str
+        :return: Details of spaces
+        :rtype: dict
         """
         return self.transport.GET(url='/org/%s/space/' % org_id)
 
     def create(self, attributes):
         """
         Create a new space
-          Arguments:
-            Refer to API. Pass in argument as dictionary
-          returns:
-            Dict containing details of newly created space
+        
+        :param attributes: Refer to API. Pass in argument as dictionary
+        :type attributes: dict
+        :return: Details of newly created space
+        :rtype: dict
         """
         if not isinstance(attributes, dict):
             raise TypeError('Dictionary of values expected')
