@@ -29,7 +29,7 @@ class Area(object):
         if not hook:
             options_['hook'] = hook
         if options_:
-            return '?' + urlencode(options_)
+            return '?' + urlencode(options_).lower()
         else:
             return ''
 
@@ -38,9 +38,11 @@ class Item(Area):
     def find(self, item_id, basic=False, **kwargs):
         """
         Get item
-
-        :param item_id: Item's id
-        :return: Dict with item info
+        
+        Arguments:
+            item_id: Item's id
+        Returns:
+            Dict with item info
         """
         if basic:
             return self.transport.GET(url='/item/%d/basic' % item_id)
@@ -100,8 +102,10 @@ class Application(Area):
         """
         Activates the application with app_id
 
-        :param app_id: Application ID as string or int
-        :return: Python dict of JSON response
+        Arguments:
+            app_id: Application ID as string or int
+        Return:
+            Python dict of JSON response
         """
         return self.transport.POST(url='/app/%s/activate' % app_id)
 
