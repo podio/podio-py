@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
+
 from . import areas
 
-class FailedRequest(Exception):
 
+class FailedRequest(Exception):
     def __init__(self, error):
         self.error = error
 
@@ -10,8 +12,8 @@ class FailedRequest(Exception):
 
 
 class Client(object):
-    """The Podio API client. Callers should use the factory
-    method OAuthClient to create instances.
+    """
+    The Podio API client. Callers should use the factory method OAuthClient to create instances.
     """
 
     def __init__(self, transport):

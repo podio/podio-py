@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 from . import transport, client
+
 
 def build_headers(authorization_headers, user_agent):
     headers = transport.KeepAliveHeaders(authorization_headers)
@@ -10,14 +12,15 @@ def build_headers(authorization_headers, user_agent):
 def OAuthClient(api_key, api_secret, login, password, user_agent=None,
                 domain="https://api.podio.com"):
     auth = transport.OAuthAuthorization(login, password,
-    api_key, api_secret, domain)
+                                        api_key, api_secret, domain)
     return AuthorizingClient(domain, auth, user_agent=user_agent)
-    
+
+
 def OAuthAppClient(client_id, client_secret, app_id, app_token, user_agent=None,
-                domain="https://api.podio.com"):
+                   domain="https://api.podio.com"):
 
     auth = transport.OAuthAppAuthorization(app_id, app_token,
-    client_id, client_secret, domain)
+                                           client_id, client_secret, domain)
 
     return AuthorizingClient(domain, auth, user_agent=user_agent)
 
