@@ -42,7 +42,7 @@ It is possible to override the default response handler by passing handler as
 a keyword argument to a transport function call. For example:
 
     x = lambda x,y: (x,y)
-    result = c.Items.find(11007, basic=True, handler=x)
+    result = c.Item.find(11007, basic=True, handler=x)
     ($result, $data) #Returned info
 
 Tests
