@@ -33,7 +33,7 @@ Example
         username,
         password,    
     )
-    print c.Items.find(22342)
+    print c.Item.find(22342)
 
 Notes
 ------
