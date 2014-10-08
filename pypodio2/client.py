@@ -23,3 +23,10 @@ class Client(object):
         new_trans = self.transport
         area = getattr(areas, name)
         return area(new_trans)
+
+    def __dir__(self):
+        """
+        Should return list of attribute names.
+        Since __getattr__ looks in areas, we simply list the content of the areas module
+        """
+        return dir(areas)
