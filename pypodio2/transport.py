@@ -62,8 +62,7 @@ class OAuthAppAuthorization(object):
         headers = {'content-type': 'application/x-www-form-urlencoded'}
         response, data = h.request(domain + "/oauth/token", "POST",
                                    urlencode(body), headers=headers)
-        if response['status'] == '200':
-            self.token = OAuthToken(_handle_response(response, data))
+        self.token = OAuthToken(_handle_response(response, data))
 
     def __call__(self):
         return self.token.to_headers()
