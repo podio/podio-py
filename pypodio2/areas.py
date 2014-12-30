@@ -76,6 +76,12 @@ class Item(Area):
         return self.transport.GET(url='/item/%d/revision/%d/%d' % (item_id, revision_from_id,
                                                                    revision_to_id))
 
+    def values(self, item_id):
+        return self.transport.GET(url='/item/%s/value' % item_id)
+
+    def values_v2(self, item_id):
+        return self.transport.GET(url='/item/%s/value/v2' % item_id)
+
     def create(self, app_id, attributes, silent=False, hook=True):
         if not isinstance(attributes, dict):
             raise TypeError('Must be of type dict')

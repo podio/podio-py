@@ -74,16 +74,20 @@ def test_revision_difference():
                      '/item/%s/revision/%s/%s' % (item_id, from_id, to_id))
 
 
-def test_revision_difference():
-    item_id = 2
-    from_id = 4
-    to_id = 8
+def test_values():
+    item_id = 9271
 
     client, check_assertions = check_client_method()
-    result = client.Item.revision_difference(item_id, from_id, to_id)
-    check_assertions(result,
-                     'GET',
-                     '/item/%s/revision/%s/%s' % (item_id, from_id, to_id))
+    result = client.Item.values(item_id)
+    check_assertions(result, 'GET', '/item/%s/value' % item_id)
+
+
+def test_values_v2():
+    item_id = 9271
+
+    client, check_assertions = check_client_method()
+    result = client.Item.values_v2(item_id)
+    check_assertions(result, 'GET', '/item/%s/value/v2' % item_id)
 
 
 def test_create():
