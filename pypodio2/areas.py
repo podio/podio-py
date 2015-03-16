@@ -521,3 +521,8 @@ class Files(Area):
         attributes = {'filename': filename,
                       'source': filedata}
         return self.transport.POST(url='/file/v2/', body=attributes, type='multipart/form-data')
+
+    def copy(self, file_id):
+        """Copy a file to generate a new file_id"""
+
+        return self.transport.POST(url='/file/%s/copy' % file_id)
