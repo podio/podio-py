@@ -44,6 +44,41 @@ class Area(object):
         else:
             return ''
 
+class Embed(Area):
+
+    def __init__(self, *args, **kwargs):
+        super(Embed, self).__init__(*args, **kwargs)
+
+    def create(self, attributes):
+        if type(attributes) != dict:
+            return ApiErrorException('Must be of type dict')
+        attributes = json.dumps(attributes)
+        return self.transport.POST(url='/embed/', body=attributes, type='application/json')
+
+class Contact(Area):
+
+    def __init__(self, *args, **kwargs):
+        super(Contact, self).__init__(*args, **kwargs)
+
+    def create(self, space_id, attributes):
+        if type(attributes) != dict:
+            return ApiErrorException('Must be of type dict')
+        attributes = json.dumps(attributes)
+        return self.transport.POST(url='/contact/space/%d/' % space_id, body=attributes, type='application/json')
+
+
+class Search(Area):
+
+    def __init__(self, *args, **kwargs):
+        super(Search, self).__init__(*args, **kwargs)
+
+    def searchApp(self, app_id, attributes):
+        if type(attributes) != dict:
+            return ApiErrorException('Must be of type dict')
+        attributes = json.dumps(attributes)
+        return self.transport.POST(url='/search/app/%d/' % app_id, body=attributes, type='application/json')
+
+
 
 class Item(Area):
     def find(self, item_id, basic=False, **kwargs):
@@ -486,3 +521,8 @@ class Files(Area):
         attributes = {'filename': filename,
                       'source': filedata}
         return self.transport.POST(url='/file/v2/', body=attributes, type='multipart/form-data')
+
+    def copy(self, file_id):
+        """Copy a file to generate a new file_id"""
+
+        return self.transport.POST(url='/file/%s/copy' % file_id)
