@@ -138,3 +138,15 @@ def test_delete():
                                          'DELETE',
                                          body=None,
                                          headers={})
+
+def test_bulk_delete():
+    app_id = 1
+    attributes = { 'item_ids': [1,2,3] }
+
+    client, check_assertions = check_client_method()
+    result = client.Item.bulk_delete(app_id, attributes)
+    check_assertions(result,
+                     'POST',
+                     '/item/app/%s/delete/' % app_id,
+                     json.dumps(attributes),
+                     {'content-type': 'application/json'})
