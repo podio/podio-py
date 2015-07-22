@@ -66,7 +66,7 @@ class OAuthAuthorization(object):
         self.token = OAuthToken(_handle_response(response, data))
 
     def __call__(self):
-        if token.expires_at <= datetime.now():
+        if self.token.expires_at <= datetime.now():
             self.refresh_token()
         return self.token.to_headers()
 
