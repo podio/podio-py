@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime, timedelta
 from httplib2 import Http
 
 try:
@@ -24,6 +25,7 @@ class OAuthToken(object):
     """
     def __init__(self, resp):
         self.expires_in = resp['expires_in']
+        self.expires_at = datetime.now() + timedelta(seconds=self.expires_in)
         self.access_token = resp['access_token']
         self.refresh_token = resp['refresh_token']
 
@@ -33,8 +35,25 @@ class OAuthToken(object):
 
 class OAuthAuthorization(object):
     """Generates headers for Podio OAuth2 Authorization"""
+    def refresh_token(self):
+        '''Refresh token'''
+        body = {
+                'grant_type': 'refresh_token',
+                'client_id': self.key,
+                'client_secret': self.secret,
+                'refresh_token': self.token.refresh_token,
+                }
+        h = Http(disable_ssl_certificate_validation=True)
+        headers = {'content-type': 'application/x-www-form-urlencoded'}
+        response, data = h.request(self.domain + self.token_url, "POST",
+                                   urlencode(body), headers=headers)
+        self.token = OAuthToken(_handle_response(response, data))
 
     def __init__(self, login, password, key, secret, domain):
+        self.key = key
+        self.secret = secret
+        self.domain = domain
+        self.token_url = "/oauth/token"
         body = {'grant_type': 'password',
                 'client_id': key,
                 'client_secret': secret,
@@ -42,11 +61,13 @@ class OAuthAuthorization(object):
                 'password': password}
         h = Http(disable_ssl_certificate_validation=True)
         headers = {'content-type': 'application/x-www-form-urlencoded'}
-        response, data = h.request(domain + "/oauth/token", "POST",
+        response, data = h.request(self.domain + self.token_url, "POST",
                                    urlencode(body), headers=headers)
         self.token = OAuthToken(_handle_response(response, data))
 
     def __call__(self):
+        if token.expires_at <= datetime.now():
+            self.refresh_token()
         return self.token.to_headers()
 
 
