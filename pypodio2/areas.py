@@ -84,7 +84,7 @@ class Item(Area):
     def find(self, item_id, basic=False, **kwargs):
         """
         Get item
-        
+
         :param item_id: Item ID
         :type item_id: int
         :return: Item info
@@ -131,7 +131,7 @@ class Item(Area):
         """
         Updates the item using the supplied attributes. If 'silent' is true, Podio will send
         no notifications to subscribed users and not post updates to the stream.
-        
+
         Important: webhooks will still be called.
         """
         if not isinstance(attributes, dict):
@@ -183,6 +183,42 @@ class Application(Area):
         attributes = json.dumps(attributes)
         return self.transport.POST(url='/app/%s/field/' % app_id, body=attributes,
                                    type='application/json')
+
+    def get_field(self, app_id, field_identifier):
+        """
+        Get field information
+
+        Args:
+            app_id (integer): Application ID
+            field_identifier (integer): Field ID
+
+        Returns:
+            dict: Calls endpoint for getting field information, returns
+                  response in dict format
+        """
+        return self.transport.GET(
+            url='/app/%s/field/%s' % (app_id, field_identifier))
+
+    def update_field(self, app_id, field_id, attributes):
+        """
+        Updates a field within an app, can not change field type
+
+        Args:
+            app_id (integer): Application ID
+            field_id (integer): Field ID
+            attributes (dictionary): Field attributes
+
+        Returns:
+            dict: Calls update field endpoint using args, returns response
+                  in dict format.
+        """
+        if not isinstance(attributes, dict):
+            raise TypeError('Must be of type dict')
+        attributes = json.dumps(attributes)
+        return self.transport.PUT(
+            url='/app/%s/field/%s' % (app_id, field_id),
+            body=attributes,
+            type='application/json')
 
     def deactivate(self, app_id):
         """
@@ -249,7 +285,7 @@ class Task(Area):
     def delete(self, task_id):
         """
         Deletes the app with the given id.
-        
+
         :param task_id: Task ID
         :type task_id: str or int
         """
@@ -345,7 +381,7 @@ class Space(Area):
     def create(self, attributes):
         """
         Create a new space
-        
+
         :param attributes: Refer to API. Pass in argument as dictionary
         :type attributes: dict
         :return: Details of newly created space
