@@ -79,7 +79,6 @@ class Search(Area):
         return self.transport.POST(url='/search/app/%d/' % app_id, body=attributes, type='application/json')
 
 
-
 class Item(Area):
     def find(self, item_id, basic=False, **kwargs):
         """
@@ -100,6 +99,9 @@ class Item(Area):
         attributes = json.dumps(attributes)
         return self.transport.POST(url="/item/app/%d/filter/" % app_id, body=attributes,
                                    type="application/json", **kwargs)
+
+    def filter_by_view(self, app_id, view_id):
+        return self.transport.POST(url="/item/app/{}/filter/{}".format(app_id, view_id))
 
     def find_all_by_external_id(self, app_id, external_id):
         return self.transport.GET(url='/item/app/%d/v2/?external_id=%r' % (app_id, external_id))
@@ -530,24 +532,33 @@ class Files(Area):
 
 class View(Area):
 
-    def create(self):
+    def create(self, app_id, attributes):
+        """ Creates a new view on the specified app """
         pass
 
-    def delete(self):
-        pass
+    def delete(self, view_id):
+        """ Delete the associated view """
+        return self.transport.DELETE(url='/view/{}'.format(view_id))
+
 
     def get(self, app_id, view_id_or_name):
         """ Retrieve the definition of a given view, provided the app_id and the view_id """
         return self.transport.GET(url='/view/app/{}/{}'.format(app_id, view_id_or_name))
 
-    def get_views(self):
+    def get_views(self, app_id):
+        """ Get all of the views for the specified app """
         pass
 
     def make_default(self):
+        """
+        Makes the view with the given id the default view for the app. The view must be of type
+        "saved" and must be active. In addition the user most have right to update the app.
+        """
         pass
 
     def update_last_view(self):
         pass
 
     def update_view(self):
+        """ Current documentation is missing some details. Implement once this is better understood. """
         pass
