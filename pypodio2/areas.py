@@ -526,3 +526,28 @@ class Files(Area):
         """Copy a file to generate a new file_id"""
 
         return self.transport.POST(url='/file/%s/copy' % file_id)
+
+
+class View(Area):
+
+    def create(self):
+        pass
+
+    def delete(self):
+        pass
+
+    def get(self, app_id, view_id_or_name):
+        """ Retrieve the definition of a given view, provided the app_id and the view_id """
+        return self.transport.GET(url='/view/app/{}/{}'.format(app_id, view_id_or_name))
+
+    def get_views(self):
+        pass
+
+    def make_default(self):
+        pass
+
+    def update_last_view(self):
+        pass
+
+    def update_view(self):
+        pass
