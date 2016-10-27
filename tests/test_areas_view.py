@@ -7,10 +7,7 @@ it.
 
 import json
 
-from mock import Mock
-from nose.tools import eq_
-
-from tests.utils import check_client_method, get_client_and_http, URL_BASE
+from tests.utils import check_client_method
 
 
 def test_create():
@@ -32,8 +29,22 @@ def test_delete():
     check_assertions(result, 'DELETE', '/view/{}'.format(view_id))
 
 
-def test_get():
-    pass
+def test_get_view():
+    app_id = 122
+    view_id = 222
+    view_name = 'pizzas4life'
+
+    client, check_assertions = check_client_method()
+    result = client.View.get(app_id, view_id)
+    check_assertions(result, 'GET', '/view/app/{}/{}'.format(app_id, view_id))
+
+    client, check_assertions = check_client_method()
+    result = client.View.get(app_id, view_name)
+    check_assertions(result, 'GET', '/view/app/{}/{}'.format(app_id, view_name))
+
+    client, check_assertions = check_client_method()
+    result = client.View.get(app_id, 'last')
+    check_assertions(result, 'GET', '/view/app/{}/{}'.format(app_id, 'last'))
 
 
 def test_get_views():
@@ -53,12 +64,31 @@ def test_get_views():
 
 
 def test_make_default():
-    pass
+
+    view_id = 8675309
+    client, check_assertions = check_client_method()
+    result = client.View.make_default(view_id)
+    check_assertions(result, 'POST', '/view/{}/default'.format(view_id),
+                     expected_body=json.dumps({}),
+                     expected_headers={'content-type': 'application/json'})
 
 
 def test_update_last_view():
-    pass
+    app_id = 666777888
+    attributes = {'a': 'b', 'c': 'd'}
+    client, check_assertions = check_client_method()
+    result = client.View.update_last_view(app_id, attributes)
+    check_assertions(result, 'PUT', '/view/app/{}/last'.format(app_id),
+                     expected_body=json.dumps(attributes),
+                     expected_headers={'content-type': 'application/json'})
 
 
 def test_update_view():
-    pass
+    view_id = 131314
+    attributes = {'a': 'b', 'c': 'd'}
+    client, check_assertions = check_client_method()
+    result = client.View.update_view(view_id, attributes)
+    check_assertions(result, 'PUT', '/view/{}'.format(view_id),
+                     expected_body=json.dumps(attributes),
+                     expected_headers={'content-type': 'application/json'})
+

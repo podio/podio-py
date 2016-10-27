@@ -535,7 +535,12 @@ class Files(Area):
 class View(Area):
 
     def create(self, app_id, attributes):
-        """ Creates a new view on the specified app """
+        """
+        Creates a new view on the specified app
+
+        :param app_id: the application id
+        :param attributes: the body of the request as a dictionary
+        """
         if not isinstance(attributes, dict):
             raise TypeError('Must be of type dict')
         attributes = json.dumps(attributes)
@@ -543,28 +548,69 @@ class View(Area):
                                    body=attributes, type='application/json')
 
     def delete(self, view_id):
-        """ Delete the associated view """
+        """
+        Delete the associated view
+
+        :param view_id: id of the view to delete
+        """
         return self.transport.DELETE(url='/view/{}'.format(view_id))
 
-    def get(self, app_id, view_id_or_name):
-        """ Retrieve the definition of a given view, provided the app_id and the view_id """
-        return self.transport.GET(url='/view/app/{}/{}'.format(app_id, view_id_or_name))
+    def get(self, app_id, view_specifier):
+        """
+        Retrieve the definition of a given view, provided the app_id and the view_id
+
+        :param app_id: the app id
+        :param view_specifier:
+            Can be one of the following:
+            1. The view ID
+            2. The view's name
+            3. "last" to look up the last view used
+        """
+        return self.transport.GET(url='/view/app/{}/{}'.format(app_id, view_specifier))
 
     def get_views(self, app_id, include_standard_views=False):
-        """ Get all of the views for the specified app """
+        """
+        Get all of the views for the specified app
+
+        :param app_id: the app containing the views
+        :param include_standard_views: defaults to false. Set to true if you wish to include standard views.
+        """
         include_standard = "true" if include_standard_views is True else "false"
-        return self.transport.GET(url='/view/app/{}/?include_standard_views={}'.format(app_id, include_standard),
-                                  )
-    def make_default(self):
+        return self.transport.GET(url='/view/app/{}/?include_standard_views={}'.format(app_id, include_standard))
+
+    def make_default(self, view_id):
         """
         Makes the view with the given id the default view for the app. The view must be of type
         "saved" and must be active. In addition the user most have right to update the app.
+
+        :param view_id: the unique id of the view you wish to make the default
         """
-        pass
+        return self.transport.POST(url='/view/{}/default'.format(view_id))
 
-    def update_last_view(self):
-        pass
+    def update_last_view(self, app_id, attributes):
+        """
+        Updates the last view for the active user
 
-    def update_view(self):
-        """ Current documentation is missing some details. Implement once this is better understood. """
-        pass
+        :param app_id: the app id
+        :param attributes: the body of the request in dictionary format
+        """
+        if not isinstance(attributes, dict):
+            raise TypeError('Must be of type dict')
+        attribute_data = json.dumps(attributes)
+        return self.transport.PUT(url='/view/app/{}/last'.format(app_id),
+                                  body=attribute_data, type='application/json')
+
+    def update_view(self, view_id, attributes):
+        """
+        Update an existing view using the details supplied via the attributes parameter
+
+        :param view_id: the view's id
+        :param attributes: a dictionary containing the modifications to be made to the view
+        :return:
+        """
+        if not isinstance(attributes, dict):
+            raise TypeError('Must be of type dict')
+        attribute_data = json.dumps(attributes)
+        return self.transport.PUT(url='/view/{}'.format(view_id),
+                                  body=attribute_data, type='application/json')
+
