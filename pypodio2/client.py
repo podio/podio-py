@@ -5,12 +5,14 @@ from . import areas
 
 class FailedRequest(Exception):
     def __init__(self, error):
+        super(FailedRequest).__init__()
         self.error = error
 
     def __str__(self):
         return repr(self.error)
 
 
+# noinspection PyMethodMayBeStatic
 class Client(object):
     """
     The Podio API client. Callers should use the factory method OAuthClient to create instances.

@@ -1,10 +1,8 @@
 """
 Helper methods for testing
 """
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
+
 from uuid import uuid4
 
 from mock import Mock
@@ -12,7 +10,6 @@ from nose.tools import eq_
 
 import pypodio2.client
 import pypodio2.transport
-
 
 # Just in case actual HTTP calls are made, don't use a real URL
 URL_BASE = 'https://api.example.com'
@@ -68,7 +65,7 @@ def check_client_method():
     response = Mock()
     response.status = 200
     http.request = Mock(return_value=(
-            response, json.dumps(returned_object).encode("utf-8")))
+        response, json.dumps(returned_object).encode("utf-8")))
 
     def check_assertions(actual_returned,
                          http_method,
@@ -82,8 +79,8 @@ def check_client_method():
             actual_returned,
             "API method didn't return the same object as http.request()")
         http.request.assert_called_once_with(URL_BASE + expected_path,
-                                              http_method,
-                                              body=expected_body,
-                                              headers=expected_headers)
+                                             http_method,
+                                             body=expected_body,
+                                             headers=expected_headers)
 
     return client, check_assertions

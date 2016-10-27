@@ -5,10 +5,7 @@ by mocking httplib2, and making assertions about how pypodio2 calls
 it.
 """
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 from mock import Mock
 from nose.tools import eq_
@@ -59,7 +56,7 @@ def test_revisions():
     result = client.Item.revisions(item_id)
     check_assertions(result,
                      'GET',
-                     '/item/%s/revision/' % (item_id))
+                     '/item/%s/revision/' % item_id)
 
 
 def test_revision_difference():

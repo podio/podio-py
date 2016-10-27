@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 try:
     from urllib.parse import urlencode
@@ -44,6 +41,7 @@ class Area(object):
         else:
             return ''
 
+
 class Embed(Area):
 
     def __init__(self, *args, **kwargs):
@@ -54,6 +52,7 @@ class Embed(Area):
             return ApiErrorException('Must be of type dict')
         attributes = json.dumps(attributes)
         return self.transport.POST(url='/embed/', body=attributes, type='application/json')
+
 
 class Contact(Area):
 
@@ -85,6 +84,7 @@ class Item(Area):
         Get item
         
         :param item_id: Item ID
+        :param basic: ?
         :type item_id: int
         :return: Item info
         :rtype: dict
@@ -273,7 +273,7 @@ class Task(Area):
         Podio will send no notifications to subscribed users and not post
         updates to the stream. If 'hook' is false webhooks will not be called.
         """
-        #if not isinstance(attributes, dict):
+        # if not isinstance(attributes, dict):
         #    raise TypeError('Must be of type dict')
         attributes = json.dumps(attributes)
         return self.transport.POST(url='/task/%s' % self.get_options(silent=silent, hook=hook),
@@ -286,7 +286,7 @@ class Task(Area):
         If 'silent' is true, Podio will send no notifications and not post
         updates to the stream. If 'hook' is false webhooks will not be called.
         """
-        #if not isinstance(attributes, dict):
+        # if not isinstance(attributes, dict):
         #    raise TypeError('Must be of type dict')
         attributes = json.dumps(attributes)
         return self.transport.POST(body=attributes,
@@ -325,6 +325,7 @@ class Space(Area):
         Returns a space ID given the URL of the space.
 
         :param space_url: URL of the Space
+        :param id_only: ?
         :return: space_id: Space url
         :rtype: str
         """
@@ -530,6 +531,7 @@ class Files(Area):
         return self.transport.POST(url='/file/%s/copy' % file_id)
 
 
+# noinspection PyMethodMayBeStatic
 class View(Area):
 
     def create(self, app_id, attributes):
@@ -539,7 +541,6 @@ class View(Area):
     def delete(self, view_id):
         """ Delete the associated view """
         return self.transport.DELETE(url='/view/{}'.format(view_id))
-
 
     def get(self, app_id, view_id_or_name):
         """ Retrieve the definition of a given view, provided the app_id and the view_id """

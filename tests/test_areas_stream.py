@@ -6,21 +6,15 @@ by mocking httplib2, and making assertions about how pypodio2 calls
 it.
 """
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
-from mock import Mock
-from nose.tools import eq_
-
-from tests.utils import check_client_method, get_client_and_http, URL_BASE
+from tests.utils import check_client_method
 
 
 def test_find_all():
     client, check_assertions = check_client_method()
     result = client.Stream.find_all()
     check_assertions(result, 'GET', '/stream/')
+
 
 def test_find_all_by_org_id():
     org_id = 81076
@@ -73,7 +67,7 @@ def test_item_revisions():
     result = client.Item.revisions(item_id)
     check_assertions(result,
                      'GET',
-                     '/item/%s/revision/' % (item_id))
+                     '/item/%s/revision/' % item_id)
 
 
 def test_item_revision_difference():
