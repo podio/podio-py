@@ -5,6 +5,12 @@ as multipart/form-data suitable for a HTTP POST or PUT request.
 
 multipart/form-data is the standard way to upload files over HTTP"""
 
+import mimetypes
+import os
+import re
+import urllib
+from email.header import Header
+
 __all__ = ['gen_boundary', 'encode_and_quote', 'MultipartParam',
            'encode_string', 'encode_file_header', 'get_body_size', 'get_headers',
            'multipart_encode']
@@ -22,21 +28,14 @@ try:
         """Returns a random string to use as the boundary for a message"""
         return uuid.uuid4().hex
 except ImportError:
-    import random, sha
+    import random
+    import sha
 
 
     def gen_boundary():
         """Returns a random string to use as the boundary for a message"""
         bits = random.getrandbits(160)
         return sha.new(str(bits)).hexdigest()
-
-import urllib, re, os, mimetypes
-
-try:
-    from email.header import Header
-except ImportError:
-    # Python 2.4
-    from email.Header import Header
 
 
 def encode_and_quote(data):
@@ -330,7 +329,7 @@ def get_headers(params, boundary):
     return headers
 
 
-class multipart_yielder:
+class MultipartYielder:
     def __init__(self, params, boundary, cb):
         self.params = params
         self.boundary = boundary
@@ -431,4 +430,4 @@ def multipart_encode(params, boundary=None, cb=None):
     headers = get_headers(params, boundary)
     params = MultipartParam.from_params(params)
 
-    return multipart_yielder(params, boundary, cb), headers
+    return MultipartYielder(params, boundary, cb), headers
