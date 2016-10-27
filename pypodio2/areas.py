@@ -536,7 +536,11 @@ class View(Area):
 
     def create(self, app_id, attributes):
         """ Creates a new view on the specified app """
-        pass
+        if not isinstance(attributes, dict):
+            raise TypeError('Must be of type dict')
+        attributes = json.dumps(attributes)
+        return self.transport.POST(url='/view/app/{}/'.format(app_id),
+                                   body=attributes, type='application/json')
 
     def delete(self, view_id):
         """ Delete the associated view """
@@ -546,10 +550,11 @@ class View(Area):
         """ Retrieve the definition of a given view, provided the app_id and the view_id """
         return self.transport.GET(url='/view/app/{}/{}'.format(app_id, view_id_or_name))
 
-    def get_views(self, app_id):
+    def get_views(self, app_id, include_standard_views=False):
         """ Get all of the views for the specified app """
-        pass
-
+        include_standard = "true" if include_standard_views is True else "false"
+        return self.transport.GET(url='/view/app/{}/?include_standard_views={}'.format(app_id, include_standard),
+                                  )
     def make_default(self):
         """
         Makes the view with the given id the default view for the app. The view must be of type
