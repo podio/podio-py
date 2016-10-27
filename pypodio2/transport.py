@@ -91,7 +91,7 @@ class KeepAliveHeaders(object):
 class TransportException(Exception):
 
     def __init__(self, status, content):
-        super(TransportException).__init__()
+        super(TransportException, self).__init__()
         self.status = status
         self.content = content
 
