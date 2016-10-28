@@ -531,7 +531,6 @@ class Files(Area):
         return self.transport.POST(url='/file/%s/copy' % file_id)
 
 
-# noinspection PyMethodMayBeStatic
 class View(Area):
 
     def create(self, app_id, attributes):
