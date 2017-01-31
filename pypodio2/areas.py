@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 try:
     from urllib.parse import urlencode
@@ -44,6 +41,7 @@ class Area(object):
         else:
             return ''
 
+
 class Embed(Area):
 
     def __init__(self, *args, **kwargs):
@@ -54,6 +52,7 @@ class Embed(Area):
             return ApiErrorException('Must be of type dict')
         attributes = json.dumps(attributes)
         return self.transport.POST(url='/embed/', body=attributes, type='application/json')
+
 
 class Contact(Area):
 
@@ -79,13 +78,13 @@ class Search(Area):
         return self.transport.POST(url='/search/app/%d/' % app_id, body=attributes, type='application/json')
 
 
-
 class Item(Area):
     def find(self, item_id, basic=False, **kwargs):
         """
         Get item
         
         :param item_id: Item ID
+        :param basic: ?
         :type item_id: int
         :return: Item info
         :rtype: dict
@@ -100,6 +99,9 @@ class Item(Area):
         attributes = json.dumps(attributes)
         return self.transport.POST(url="/item/app/%d/filter/" % app_id, body=attributes,
                                    type="application/json", **kwargs)
+
+    def filter_by_view(self, app_id, view_id):
+        return self.transport.POST(url="/item/app/{}/filter/{}".format(app_id, view_id))
 
     def find_all_by_external_id(self, app_id, external_id):
         return self.transport.GET(url='/item/app/%d/v2/?external_id=%r' % (app_id, external_id))
@@ -271,7 +273,7 @@ class Task(Area):
         Podio will send no notifications to subscribed users and not post
         updates to the stream. If 'hook' is false webhooks will not be called.
         """
-        #if not isinstance(attributes, dict):
+        # if not isinstance(attributes, dict):
         #    raise TypeError('Must be of type dict')
         attributes = json.dumps(attributes)
         return self.transport.POST(url='/task/%s' % self.get_options(silent=silent, hook=hook),
@@ -284,7 +286,7 @@ class Task(Area):
         If 'silent' is true, Podio will send no notifications and not post
         updates to the stream. If 'hook' is false webhooks will not be called.
         """
-        #if not isinstance(attributes, dict):
+        # if not isinstance(attributes, dict):
         #    raise TypeError('Must be of type dict')
         attributes = json.dumps(attributes)
         return self.transport.POST(body=attributes,
@@ -323,6 +325,7 @@ class Space(Area):
         Returns a space ID given the URL of the space.
 
         :param space_url: URL of the Space
+        :param id_only: ?
         :return: space_id: Space url
         :rtype: str
         """
@@ -526,3 +529,87 @@ class Files(Area):
         """Copy a file to generate a new file_id"""
 
         return self.transport.POST(url='/file/%s/copy' % file_id)
+
+
+class View(Area):
+
+    def create(self, app_id, attributes):
+        """
+        Creates a new view on the specified app
+
+        :param app_id: the application id
+        :param attributes: the body of the request as a dictionary
+        """
+        if not isinstance(attributes, dict):
+            raise TypeError('Must be of type dict')
+        attributes = json.dumps(attributes)
+        return self.transport.POST(url='/view/app/{}/'.format(app_id),
+                                   body=attributes, type='application/json')
+
+    def delete(self, view_id):
+        """
+        Delete the associated view
+
+        :param view_id: id of the view to delete
+        """
+        return self.transport.DELETE(url='/view/{}'.format(view_id))
+
+    def get(self, app_id, view_specifier):
+        """
+        Retrieve the definition of a given view, provided the app_id and the view_id
+
+        :param app_id: the app id
+        :param view_specifier:
+            Can be one of the following:
+            1. The view ID
+            2. The view's name
+            3. "last" to look up the last view used
+        """
+        return self.transport.GET(url='/view/app/{}/{}'.format(app_id, view_specifier))
+
+    def get_views(self, app_id, include_standard_views=False):
+        """
+        Get all of the views for the specified app
+
+        :param app_id: the app containing the views
+        :param include_standard_views: defaults to false. Set to true if you wish to include standard views.
+        """
+        include_standard = "true" if include_standard_views is True else "false"
+        return self.transport.GET(url='/view/app/{}/?include_standard_views={}'.format(app_id, include_standard))
+
+    def make_default(self, view_id):
+        """
+        Makes the view with the given id the default view for the app. The view must be of type
+        "saved" and must be active. In addition the user most have right to update the app.
+
+        :param view_id: the unique id of the view you wish to make the default
+        """
+        return self.transport.POST(url='/view/{}/default'.format(view_id))
+
+    def update_last_view(self, app_id, attributes):
+        """
+        Updates the last view for the active user
+
+        :param app_id: the app id
+        :param attributes: the body of the request in dictionary format
+        """
+        if not isinstance(attributes, dict):
+            raise TypeError('Must be of type dict')
+        attribute_data = json.dumps(attributes)
+        return self.transport.PUT(url='/view/app/{}/last'.format(app_id),
+                                  body=attribute_data, type='application/json')
+
+    def update_view(self, view_id, attributes):
+        """
+        Update an existing view using the details supplied via the attributes parameter
+
+        :param view_id: the view's id
+        :param attributes: a dictionary containing the modifications to be made to the view
+        :return:
+        """
+        if not isinstance(attributes, dict):
+            raise TypeError('Must be of type dict')
+        attribute_data = json.dumps(attributes)
+        return self.transport.PUT(url='/view/{}'.format(view_id),
+                                  body=attribute_data, type='application/json')
+

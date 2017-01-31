@@ -5,10 +5,7 @@ by mocking httplib2, and making assertions about how pypodio2 calls
 it.
 """
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 from mock import Mock
 from nose.tools import eq_
@@ -41,6 +38,19 @@ def test_filters():
                      expected_headers={'content-type': 'application/json'})
 
 
+def test_filter_by_view():
+    app_id = 421
+    view_id = 123
+
+    client, check_assertions = check_client_method()
+    result = client.Item.filter_by_view(app_id, view_id)
+    check_assertions(result,
+                     'POST',
+                     '/item/app/{}/filter/{}'.format(app_id, view_id),
+                     expected_body=json.dumps({}),
+                     expected_headers={'content-type': 'application/json'})
+
+
 def test_find_by_external_id():
     app_id = 13
     external_id = 37
@@ -59,7 +69,7 @@ def test_revisions():
     result = client.Item.revisions(item_id)
     check_assertions(result,
                      'GET',
-                     '/item/%s/revision/' % (item_id))
+                     '/item/%s/revision/' % item_id)
 
 
 def test_revision_difference():

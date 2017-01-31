@@ -8,10 +8,8 @@ except ImportError:
 
 from .encode import multipart_encode
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
+
+import json
 
 
 class OAuthToken(object):
@@ -93,6 +91,7 @@ class KeepAliveHeaders(object):
 class TransportException(Exception):
 
     def __init__(self, status, content):
+        super(TransportException, self).__init__()
         self.status = status
         self.content = content
 
