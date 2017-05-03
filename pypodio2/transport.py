@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime, timedelta
 from httplib2 import Http
 
 try:
@@ -22,48 +23,65 @@ class OAuthToken(object):
     """
     def __init__(self, resp):
         self.expires_in = resp['expires_in']
+        self.expires_at = datetime.now() + timedelta(seconds=self.expires_in)
         self.access_token = resp['access_token']
         self.refresh_token = resp['refresh_token']
 
     def to_headers(self):
         return {'authorization': "OAuth2 %s" % self.access_token}
 
+class OAuthAuthorizationBase(object):
 
-class OAuthAuthorization(object):
+    def __init__(self, key, secret, domain):
+        self.key = key
+        self.secret = secret
+        self.domain = domain
+
+    def token_request(self, body):
+        h = Http(disable_ssl_certificate_validation=True)
+        headers = {'content-type': 'application/x-www-form-urlencoded'}
+        response, data = h.request(self.domain + "/oauth/token", "POST",
+                                   urlencode(body), headers=headers)
+        self.token = OAuthToken(_handle_response(response, data))
+
+    def refresh_token(self):
+        body = {
+            'grant_type': 'refresh_token',
+            'client_id': self.key,
+            'client_secret': self.secret,
+            'refresh_token': self.token.refresh_token,
+        }
+        self.token_request(body)
+
+    def __call__(self):
+        if self.token.expires_at <= datetime.now():
+            self.refresh_token()
+        return self.token.to_headers()
+
+
+class OAuthAuthorization(OAuthAuthorizationBase):
     """Generates headers for Podio OAuth2 Authorization"""
 
     def __init__(self, login, password, key, secret, domain):
+        super(OAuthAuthorization, self).__init__(key, secret, domain)
         body = {'grant_type': 'password',
                 'client_id': key,
                 'client_secret': secret,
                 'username': login,
                 'password': password}
-        h = Http(disable_ssl_certificate_validation=True)
-        headers = {'content-type': 'application/x-www-form-urlencoded'}
-        response, data = h.request(domain + "/oauth/token", "POST",
-                                   urlencode(body), headers=headers)
-        self.token = OAuthToken(_handle_response(response, data))
-
-    def __call__(self):
-        return self.token.to_headers()
+        self.token_request(body)
 
 
-class OAuthAppAuthorization(object):
+class OAuthAppAuthorization(OAuthAuthorizationBase):
 
     def __init__(self, app_id, app_token, key, secret, domain):
+        super(OAuthAppAuthorization, self).__init__(key, secret, domain)
         body = {'grant_type': 'app',
                 'client_id': key,
                 'client_secret': secret,
                 'app_id': app_id,
                 'app_token': app_token}
-        h = Http(disable_ssl_certificate_validation=True)
-        headers = {'content-type': 'application/x-www-form-urlencoded'}
-        response, data = h.request(domain + "/oauth/token", "POST",
-                                   urlencode(body), headers=headers)
-        self.token = OAuthToken(_handle_response(response, data))
-
-    def __call__(self):
-        return self.token.to_headers()
+        self.token_request(body)
 
 
 class UserAgentHeaders(object):
