@@ -240,6 +240,35 @@ class Application(Area):
         """
         return self.transport.GET(url='/app/space/%s/' % space_id)
 
+    def get_field(self, app_id, field_id):
+        """
+        Returns all specifications for the given field
+
+        :param app_id: Application ID
+        :type app_id: str or int
+        :param space_id: Space ID
+        :type space_id: str or int
+
+        :return Python dict of JSON response with the apps that the given app depends on.
+        """
+        return self.transport.GET(url='/app/%s/field/%s' % (app_id,field_id))
+
+    def update_field(self, app_id, field_id, attributes):
+        """
+        Returns all specifications for the given field
+
+        :param app_id: Application ID
+        :type app_id: str or int
+        :param space_id: Space ID
+        :type space_id: str or int
+        :param attributes: Updated field information. see https://developers.podio.com/doc/applications/update-an-app-field-22356
+        :type attributes: json, can be created with json.load('{"label": "labelname",') if manual.
+        
+        :return Python dict of JSON response with app revision number if successful
+        """
+        attributes = json.dumps(attributes)
+        return self.transport.PUT(url='/app/%s/field/%s' % (app_id, field_id), body=attributes, type='application/json')
+
 
 class Task(Area):
     def get(self, **kwargs):
