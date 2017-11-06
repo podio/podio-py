@@ -678,7 +678,7 @@ class Comment(Area):
         :return: Details of comment
         :rtype: dict
         """
-        return self.transport.GET(url='/comment//{}'.format(comment_id))
+        return self.transport.GET(url='/comment/{}'.format(comment_id))
 
     def delete(self, comment_id):
         """
