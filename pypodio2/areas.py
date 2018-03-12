@@ -613,3 +613,78 @@ class View(Area):
         return self.transport.PUT(url='/view/{}'.format(view_id),
                                   body=attribute_data, type='application/json')
 
+
+class Comment(Area):
+
+    def create(self, ref_type, ref_id, attributes):
+        """
+        Post a comment on specified app item
+
+        :param ref_type: Object Reference type
+        :param ref_id: Object Reference ID
+        :param attributes: the body of the request as a dictionary
+        :return: Details of comment
+        :rtype: dict
+        """
+        if type(attributes) != dict:
+            raise TypeError('Must be of type dict')
+        attributes = json.dumps(attributes)
+        return self.transport.POST(url='/comment/{}/{}/'.format(ref_type, ref_id),
+                                   body=attributes, type='application/json')
+
+
+    def update(self, comment_id, attributes, silent=False, hook=True):
+        """
+        Edit or update a comment
+
+        :param comment_id: Comment ID to edit
+        :param attributes: the body of the request as a dictionary
+        """
+        if not isinstance(attributes, dict):
+            raise TypeError('Must be of type dict')
+        attributes = json.dumps(attributes)
+        return self.transport.PUT(body=attributes,
+                                  type='application/json',
+                                  url='/comment/%d%s' % (comment_id, self.get_options(silent=silent,
+                                                                                      hook=hook)))
+
+    def find_all(self, ref_type, ref_id):
+        """
+        Find all of the comments of an object reference
+
+        :param ref_type: Object reference type
+        :param ref_id: Object Reference ID
+        :return: Details of comments
+        :rtype: dict
+        """
+        return self.transport.GET(url='/comment/{}/{}'.format(ref_type, ref_id))
+
+    def revisions(self, comment_id):
+        """
+        Returns revisions of given comment
+
+        :param comment_id: Comment ID
+        :return: Details of comments revisions
+        :rtype: dict
+        """
+        return self.transport.GET(url='/comment/{}/revision'.format(comment_id))
+
+
+    def find(self, comment_id):
+        """
+        Find single comment details
+
+        :param comment_id: Comment ID
+        :return: Details of comment
+        :rtype: dict
+        """
+        return self.transport.GET(url='/comment/{}'.format(comment_id))
+
+    def delete(self, comment_id):
+        """
+        Remove comment from reference
+
+        :param comment_id: Comment ID
+        """
+        return self.transport.DELETE(url='/comment/{}'.format(comment_id))
+
