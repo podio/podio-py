@@ -246,11 +246,27 @@ class Task(Area):
         """
         Get tasks endpoint. QueryStrings are kwargs
         """
+        # should deprecate this method
         return self.transport.GET('/task/', **kwargs)
 
+    def find_all(self, **kwargs):
+        """
+        Get all tasks. QueryStrings are kwargs
+        """
+        return self.transport.GET('/task/', **kwargs)
+    
+    def find(self, task_id, **kwargs):
+        """
+        Get the task with the given task_id.
+        
+        :param task_id: Task ID
+        :type task_id: str or int
+        """
+        return self.transport.GET(url='/task/%s' % task_id)
+    
     def delete(self, task_id):
         """
-        Deletes the app with the given id.
+        Deletes the task with the given id.
         
         :param task_id: Task ID
         :type task_id: str or int
