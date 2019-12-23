@@ -1,5 +1,13 @@
 from setuptools import setup
 
+extras = {
+    'test': [
+        'mock',
+        'nose',
+        'tox',
+    ]
+}
+
 setup(
     name="pypodio2",
     version="1.0.0b0",
@@ -13,7 +21,7 @@ setup(
         "httplib2",
         "future",
     ],
-    tests_require=["nose", "mock", "tox"],
+    extras_require=extras,
     test_suite="nose.collector",
     classifiers=[
         "Development Status :: 4 - Beta",

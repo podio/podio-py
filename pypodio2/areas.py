@@ -11,6 +11,10 @@ except ImportError:
     from urllib.parse import urlencode
 
 
+class ApiErrorException(Exception):
+    pass
+
+
 class Area(object):
     """Represents a Podio Area"""
     def __init__(self, transport):
