@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="pypodio2",
-    version="0.2",
+    version="1.0.0b0",
     description="Python wrapper for the Podio API",
     author="Podio",
     author_email="mail@podio.com",
