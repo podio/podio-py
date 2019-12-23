@@ -9,7 +9,10 @@ setup(
     url="https://github.com/podio/podio-py",
     license="MIT",
     packages=["pypodio2"],
-    install_requires=["httplib2"],
+    install_requires=[
+        "httplib2",
+        "future",
+    ],
     tests_require=["nose", "mock", "tox"],
     test_suite="nose.collector",
     classifiers=[
