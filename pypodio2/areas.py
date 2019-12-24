@@ -1,10 +1,18 @@
 # -*- coding: utf-8 -*-
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import object
 import json
 
 try:
     from urllib.parse import urlencode
 except ImportError:
-    from urllib import urlencode
+    from urllib.parse import urlencode
+
+
+class ApiErrorException(Exception):
+    pass
 
 
 class Area(object):

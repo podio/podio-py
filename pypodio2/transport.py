@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import object
 from httplib2 import Http
 
 try:
     from urllib.parse import urlencode
 except ImportError:
-    from urllib import urlencode
+    from urllib.parse import urlencode
 
 from .encode import multipart_encode
 
