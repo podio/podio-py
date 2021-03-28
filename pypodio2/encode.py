@@ -44,7 +44,7 @@ def encode_and_quote(data):
     if data is None:
         return None
 
-    if isinstance(data, unicode):
+    if isinstance(data, str):
         data = data.encode("utf-8")
     return urllib.parse.quote_plus(data)
 
@@ -54,7 +54,7 @@ def _strify(s):
     otherwise return str(s), or None if s is None"""
     if s is None:
         return None
-    if isinstance(s, unicode):
+    if isinstance(s, str):
         return s.encode("utf-8")
     return str(s)
 
@@ -99,7 +99,7 @@ class MultipartParam(object):
         if filename is None:
             self.filename = None
         else:
-            if isinstance(filename, unicode):
+            if isinstance(filename, str):
                 # Encode with XML entities
                 self.filename = filename.encode("ascii", "xmlcharrefreplace")
             else:
