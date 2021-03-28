@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="pypodio2",
-    version="everlaw.0.2.1",
+    version="everlaw.0.3",
     description="Python wrapper for the Podio API",
     author="Podio",
     author_email="mail@podio.com",

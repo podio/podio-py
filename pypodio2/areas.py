@@ -531,6 +531,101 @@ class Files(Area):
         return self.transport.POST(url='/file/%s/copy' % file_id)
 
 
+class Comments(Area):
+    def find_all(self):
+        """
+        Find a given comment.
+
+        :param comment_id: Comment ID
+        :type comment_id: str or int
+        see https://developers.podio.com/doc/comments/get-a-comment-22345
+        """
+        return self.transport.GET(url='/comment/')
+
+    def find(self, comment_id):
+        return self.transport.GET(url='/comment/%s' % comment_id)
+
+    def find_all_for(self, commentable_type, commentable_id):
+        """
+        Find all comments for a commentable item.
+
+        :param commentable_type: Commentable item type
+        :type commentable_type: str or int
+
+        :param commentable_id: Commentable item ID
+        :type commentable_id: str or int
+
+        See https://developers.podio.com/doc/comments/get-comments-on-object-22371
+
+        """
+        return self.transport.GET(url='/comment/%s/%s' % (commentable_type, commentable_id))
+
+    def find_recent_for_share(self):
+        return self.transport.GET(url='/comment/share/')
+
+    def liked_by(self, comment_id):
+        """
+        Find who liked a given comment.
+
+        :param comment_id: Comment ID
+        :type comment_id: str or int
+        see https://developers.podio.com/doc/comments/get-who-liked-a-comment-29007011
+        """
+        return self.transport.GET(url='/comment/%s/liked_by/' % comment_id)
+
+    def create(self, commentable_type, commentable_id, attributes):
+        """
+        Create a comment
+
+        :param commentable_type: Commentable item type
+        :type commentable_type: str or int
+
+        :param commentable_id: Commentable item ID
+        :type commentable_id: str or int
+
+        :param attributes: Comment attributes
+        :type attributes: str (json)
+
+        See https://developers.podio.com/doc/comments/add-comment-to-object-22340
+
+        """
+        attributes = json.dumps(attributes)
+        return self.transport.POST(
+            url='/comment/%s/%s' % (commentable_type, commentable_id),
+            body=attributes,
+            type='multipart/form-data',
+        )
+
+    def update(self, comment_id, attributes):
+        """
+        Update a comment
+
+        :param comment_id: Comment ID
+        :type comment_id: str or int
+
+        :param attributes: Comment attributes
+        :type attributes: str (json)
+        See https://developers.podio.com/doc/comments/update-a-comment-22346
+        """
+        attributes = json.dumps(attributes)
+        return self.transport.POST(
+            url='/comment/%s/%s' % (commentable_type, commentable_id),
+            body=attributes,
+            type='multipart/form-data',
+        )
+
+
+    def delete(self, comment_id):
+        """
+        Deletes the comment with the given id.
+
+        :param comment_id: Comment ID
+        :type comment_id: str or int
+        see https://developers.podio.com/doc/comments/delete-a-comment-22347
+        """
+        return self.transport.DELETE(url='/task/%s' % comment_id)
+
+
 class View(Area):
 
     def create(self, app_id, attributes):
