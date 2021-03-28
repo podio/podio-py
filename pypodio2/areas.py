@@ -553,12 +553,12 @@ class Comment(Area):
         :type commentable_type: str or int
 
         :param commentable_id: Commentable item ID
-        :type commentable_id: str or int
+        :type commentable_id: int
 
         See https://developers.podio.com/doc/comments/get-comments-on-object-22371
 
         """
-        return self.transport.GET(url='/comment/%s/%s' % (commentable_type, commentable_id))
+        return self.transport.GET(url='/comment/%s/%d' % (commentable_type, commentable_id))
 
     def find_recent_for_share(self):
         return self.transport.GET(url='/comment/share/')
@@ -568,7 +568,7 @@ class Comment(Area):
         Find who liked a given comment.
 
         :param comment_id: Comment ID
-        :type comment_id: str or int
+        :type comment_id: int
         see https://developers.podio.com/doc/comments/get-who-liked-a-comment-29007011
         """
         return self.transport.GET(url='/comment/%d/liked_by/' % comment_id)
@@ -581,7 +581,7 @@ class Comment(Area):
         :type commentable_type: str or int
 
         :param commentable_id: Commentable item ID
-        :type commentable_id: str or int
+        :type commentable_id: int
 
         :param attributes: Comment attributes
         :type attributes: str (json)
@@ -589,11 +589,13 @@ class Comment(Area):
         See https://developers.podio.com/doc/comments/add-comment-to-object-22340
 
         """
+        if not isinstance(attributes, dict):
+            raise TypeError('Must be of type dict')
         attributes = json.dumps(attributes)
         return self.transport.POST(
-            url='/comment/%s/%s/%s' % (commentable_type, commentable_id, self.get_options(silent=silent, hook=hook)),
+            url='/comment/%s/%d/%s' % (commentable_type, commentable_id, self.get_options(silent=silent, hook=hook)),
             body=attributes,
-            type='multipart/form-data',
+            type='application/json',
         )
 
     def update(self, comment_id, attributes, silent=False, hook=True):
@@ -607,15 +609,17 @@ class Comment(Area):
         :type attributes: str (json)
         See https://developers.podio.com/doc/comments/update-a-comment-22346
         """
+        if not isinstance(attributes, dict):
+            raise TypeError('Must be of type dict')
         attributes = json.dumps(attributes)
         return self.transport.POST(
-            url='/comment/%d/%s' % (comment_id, self.get_options(silent=silent, hook=hook)),
+            url='/comment/%d%s' % (comment_id, self.get_options(silent=silent, hook=hook)),
             body=attributes,
-            type='multipart/form-data',
+            type='application/json',
         )
 
 
-    def delete(self, comment_id):
+    def delete(self, comment_id, silent=False, hook=True):
         """
         Deletes the comment with the given id.
 
@@ -623,7 +627,10 @@ class Comment(Area):
         :type comment_id: str or int
         see https://developers.podio.com/doc/comments/delete-a-comment-22347
         """
-        return self.transport.DELETE(url='/task/%d' % comment_id)
+        return self.transport.DELETE(url='/comment/%d%s' % (comment_id,
+                                                         self.get_options(silent=silent,
+                                                                          hook=hook)),
+                                     handler=lambda x, y: None)
 
 
 class View(Area):

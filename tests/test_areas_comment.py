@@ -24,11 +24,11 @@ def test_find():
 
     client, check_assertions = check_client_method()
     result = client.Comment.find(comment_id)
-    check_assertions(result, 'GET', '/comment/%s' % comment_id)
+    check_assertions(result, 'GET', '/comment/%d' % comment_id)
 
 
 def test_find_all_for():
-    commentable_type = 'Item'
+    commentable_type = 'item'
     commentable_id = 3984
 
     client, check_assertions = check_client_method()
@@ -47,11 +47,11 @@ def test_liked_by():
 
     client, check_assertions = check_client_method()
     result = client.Comment.liked_by(comment_id)
-    check_assertions(result, 'GET', '/comment/%s/liked_by/' % comment_id)
+    check_assertions(result, 'GET', '/comment/%d/liked_by/' % comment_id)
 
 
 def test_create():
-    commentable_type = 'Item'
+    commentable_type = 'item'
     commentable_id = 3984
     attributes = {'1': 1, '2': 3, '5': '8'}
 
@@ -59,7 +59,15 @@ def test_create():
     result = client.Comment.create(commentable_type, commentable_id, attributes)
     check_assertions(result,
                      'POST',
-                     '/comment/%s/%s' % (commentable_type, commentable_id),
+                     '/comment/%s/%s/' % (commentable_type, commentable_id),
+                     expected_body=json.dumps(attributes),
+                     expected_headers={'content-type': 'application/json'})
+
+    client, check_assertions = check_client_method()
+    result = client.Comment.create(commentable_type, commentable_id, attributes, silent=True)
+    check_assertions(result,
+                     'POST',
+                     '/comment/%s/%s/?silent=true' % (commentable_type, commentable_id),
                      expected_body=json.dumps(attributes),
                      expected_headers={'content-type': 'application/json'})
 
@@ -72,7 +80,15 @@ def test_update():
     result = client.Comment.update(comment_id, attributes)
     check_assertions(result,
                      'POST',
-                     '/comment/%s' % comment_id,
+                     '/comment/%d' % comment_id,
+                     expected_body=json.dumps(attributes),
+                     expected_headers={'content-type': 'application/json'})
+
+    client, check_assertions = check_client_method()
+    result = client.Comment.update(comment_id, attributes, silent=True)
+    check_assertions(result,
+                     'POST',
+                     '/comment/%d?silent=true' % comment_id,
                      expected_body=json.dumps(attributes),
                      expected_headers={'content-type': 'application/json'})
 
@@ -86,7 +102,7 @@ def test_delete():
     result = client.Comment.delete(comment_id)
 
     eq_(None, result)
-    http.request.assert_called_once_with("%s/comment/%s?" % (URL_BASE, comment_id),
+    http.request.assert_called_once_with("%s/comment/%d?" % (URL_BASE, comment_id),
                                          'DELETE',
                                          body=None,
                                          headers={})
