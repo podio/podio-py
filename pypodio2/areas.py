@@ -543,7 +543,7 @@ class Comment(Area):
         return self.transport.GET(url='/comment/')
 
     def find(self, comment_id):
-        return self.transport.GET(url='/comment/%s' % comment_id)
+        return self.transport.GET(url='/comment/%d' % comment_id)
 
     def find_all_for(self, commentable_type, commentable_id):
         """
@@ -571,9 +571,9 @@ class Comment(Area):
         :type comment_id: str or int
         see https://developers.podio.com/doc/comments/get-who-liked-a-comment-29007011
         """
-        return self.transport.GET(url='/comment/%s/liked_by/' % comment_id)
+        return self.transport.GET(url='/comment/%d/liked_by/' % comment_id)
 
-    def create(self, commentable_type, commentable_id, attributes):
+    def create(self, commentable_type, commentable_id, attributes, silent=False, hook=True):
         """
         Create a comment
 
@@ -591,12 +591,12 @@ class Comment(Area):
         """
         attributes = json.dumps(attributes)
         return self.transport.POST(
-            url='/comment/%s/%s' % (commentable_type, commentable_id),
+            url='/comment/%s/%s/%s' % (commentable_type, commentable_id, self.get_options(silent=silent, hook=hook)),
             body=attributes,
             type='multipart/form-data',
         )
 
-    def update(self, comment_id, attributes):
+    def update(self, comment_id, attributes, silent=False, hook=True):
         """
         Update a comment
 
@@ -608,7 +608,11 @@ class Comment(Area):
         See https://developers.podio.com/doc/comments/update-a-comment-22346
         """
         attributes = json.dumps(attributes)
-        return self.transport.POST(url='/comment/%s' % comment_id, body=attributes, type='multipart/form-data')
+        return self.transport.POST(
+            url='/comment/%d/%s' % (comment_id, self.get_options(silent=silent, hook=hook)),
+            body=attributes,
+            type='multipart/form-data',
+        )
 
 
     def delete(self, comment_id):
@@ -619,7 +623,7 @@ class Comment(Area):
         :type comment_id: str or int
         see https://developers.podio.com/doc/comments/delete-a-comment-22347
         """
-        return self.transport.DELETE(url='/task/%s' % comment_id)
+        return self.transport.DELETE(url='/task/%d' % comment_id)
 
 
 class View(Area):
