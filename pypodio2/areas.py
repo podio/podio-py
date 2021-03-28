@@ -531,7 +531,7 @@ class Files(Area):
         return self.transport.POST(url='/file/%s/copy' % file_id)
 
 
-class Comments(Area):
+class Comment(Area):
     def find_all(self):
         """
         Find a given comment.
@@ -608,11 +608,7 @@ class Comments(Area):
         See https://developers.podio.com/doc/comments/update-a-comment-22346
         """
         attributes = json.dumps(attributes)
-        return self.transport.POST(
-            url='/comment/%s/%s' % (commentable_type, commentable_id),
-            body=attributes,
-            type='multipart/form-data',
-        )
+        return self.transport.POST(url='/comment/%s' % comment_id, body=attributes, type='multipart/form-data')
 
 
     def delete(self, comment_id):
